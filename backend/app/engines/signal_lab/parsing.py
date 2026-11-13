@@ -5,6 +5,7 @@ optional `Symbol`/`Ticker` column for multiple stocks, day-first or ISO dates. N
 unusable rows are dropped and reported.
 """
 
+import csv
 import io
 import re
 from dataclasses import dataclass, field
@@ -68,13 +69,61 @@ def _parse_dates(col: pd.Series, notes: list[str]) -> pd.Series:
     return day_first
 
 
-def parse_csv(raw: bytes, default_symbol: str = "UPLOAD") -> list[ParsedSeries]:
+def _locate_header(grid: pd.DataFrame) -> pd.DataFrame:
+    """Broker/NSE exports often have title lines above the table: use the first row (within 15) that names a
+    date column and a close column as the header."""
+    for i in range(min(15, len(grid))):
+        names = {_norm(v) for v in grid.iloc[i].tolist()}
+        if names & set(ALIASES["ts"]) and names & set(ALIASES["close"] + ("adj close",)):
+            out = grid.iloc[i + 1:].copy()
+            out.columns = [str(c).strip() for c in grid.iloc[i].tolist()]
+            return out.loc[:, [c for c in out.columns if c and c.lower() != "nan"]].reset_index(drop=True)
+    if grid.empty:
+        raise DatasetError("The file has no rows.")
+    # No recognisable header: treat the first row as the header so validation names the missing column(s).
+    out = grid.iloc[1:].copy()
+    out.columns = [str(c).strip() for c in grid.iloc[0].tolist()]
+    return out.reset_index(drop=True)
+
+
+def read_table(raw: bytes) -> pd.DataFrame:
+    """CSV / TSV / semicolon / Excel (.xlsx, .xls), detected from the file's bytes, not its name."""
     if not raw or not raw.strip():
         raise DatasetError("The file is empty.")
     try:
-        df = pd.read_csv(io.BytesIO(raw), sep=None, engine="python")
+        if raw[:4] == b"PK\x03\x04":  # .xlsx (zip container)
+            grid = pd.read_excel(io.BytesIO(raw), header=None, engine="openpyxl", dtype=str)
+        elif raw[:8] == b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1":  # legacy .xls
+            grid = pd.read_excel(io.BytesIO(raw), header=None, engine="xlrd", dtype=str)
+        else:
+            utf16 = raw[:2] in (b"\xff\xfe", b"\xfe\xff")
+            if not utf16 and b"\x00" in raw[:4096]:
+                raise DatasetError("Unsupported file type: upload a CSV, TSV or Excel (.xlsx / .xls) file.")
+            text = None
+            for enc in (("utf-16",) if utf16 else ("utf-8-sig", "cp1252", "latin-1")):
+                try:
+                    text = raw.decode(enc)
+                    break
+                except UnicodeDecodeError:
+                    continue
+            if text is None:
+                raise DatasetError("Unrecognised text encoding.")
+            # Pick the delimiter that is most frequent on the busiest line (title lines above the table have
+            # none), then read rows with the csv module so ragged preamble rows don't truncate the table.
+            lines = [ln for ln in text.splitlines() if ln.strip()][:200]
+            sep = max((",", "\t", ";", "|"), key=lambda d: max((ln.count(d) for ln in lines), default=0))
+            rows = list(csv.reader(io.StringIO(text), delimiter=sep))
+            width = max((len(r) for r in rows), default=0)
+            grid = pd.DataFrame([r + [None] * (width - len(r)) for r in rows if any(c.strip() for c in r)])
+    except DatasetError:
+        raise
     except Exception as exc:
-        raise DatasetError(f"Could not read the file as CSV ({type(exc).__name__}).") from exc
+        raise DatasetError(f"Could not read the file as CSV or Excel ({type(exc).__name__}).") from exc
+    return _locate_header(grid.dropna(how="all"))
+
+
+def parse_csv(raw: bytes, default_symbol: str = "UPLOAD") -> list[ParsedSeries]:
+    df = read_table(raw)
     if len(df) > MAX_ROWS:
         raise DatasetError(f"Too many rows ({len(df):,}); the limit is {MAX_ROWS:,}.")
     cols = {_norm(c): c for c in df.columns}

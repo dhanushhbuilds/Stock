@@ -205,3 +205,44 @@ def test_ambiguous_day_first_dates_are_not_silently_swapped():
     us = _csv(n=300, start="2023-01-02", date_fmt="%m/%d/%Y")
     (u,) = parse_csv(us.to_csv(index=False).encode(), "Y")
     assert u.frame["ts"].iloc[0].strftime("%Y-%m-%d") == "2023-01-02" and any("month-first" in n for n in u.notes)
+
+
+def _frame(n=300):
+    d = pd.bdate_range("2023-01-02", periods=n)
+    c = 100 * np.exp(np.cumsum(np.random.default_rng(1).normal(0, 0.01, n)))
+    return pd.DataFrame({"Date": d.strftime("%Y-%m-%d"), "Open": c, "High": c * 1.01, "Low": c * 0.99,
+                         "Close": c, "Volume": 1000})
+
+
+@pytest.mark.parametrize("fmt", ["xlsx", "xlsx_title_rows", "tsv", "semicolon", "csv_title_rows", "utf16", "bom"])
+def test_reads_excel_tsv_and_messy_exports_identically(fmt):
+    df = _frame()
+    if fmt == "xlsx":
+        b = io.BytesIO()
+        df.to_excel(b, index=False)
+        raw = b.getvalue()
+    elif fmt == "xlsx_title_rows":
+        b = io.BytesIO()
+        with pd.ExcelWriter(b) as w:
+            pd.DataFrame([["Stock prices"]]).to_excel(w, index=False, header=False)
+            df.to_excel(w, index=False, startrow=3)
+        raw = b.getvalue()
+    elif fmt == "tsv":
+        raw = df.to_csv(index=False, sep="\t").encode()
+    elif fmt == "semicolon":
+        raw = df.to_csv(index=False, sep=";").encode()
+    elif fmt == "csv_title_rows":
+        raw = ("Historical data for TCS\nExported 13-11-2026\n\n" + df.to_csv(index=False)).encode()
+    elif fmt == "utf16":
+        raw = df.to_csv(index=False).encode("utf-16")
+    else:
+        raw = b"\xef\xbb\xbf" + df.to_csv(index=False).encode()
+    s = parse_csv(raw, "X")[0]
+    assert len(s.frame) == 300
+    assert s.frame.close.iloc[0] == pytest.approx(df.Close.iloc[0])
+    assert str(s.frame.ts.iloc[-1].date()) == df.Date.iloc[-1]
+
+
+def test_rejects_non_tabular_binary():
+    with pytest.raises(DatasetError):
+        parse_csv(b"\x89PNG\r\n\x1a\n" + b"\x00" * 64, "X")

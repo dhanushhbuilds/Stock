@@ -1,5 +1,5 @@
 import { QueryClient } from '@tanstack/react-query'
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -262,10 +262,30 @@ describe('Signal Lab', () => {
     const file = new File(['Date,Open\n2024-01-01,1\n'], 'bad.csv', { type: 'text/csv' })
     await userEvent.upload(await screen.findByLabelText('Choose dataset file'), file)
     expect(screen.getByText('bad.csv')).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: /Analyze dataset/ }))
+    // choosing a file starts the analysis by itself — no second click
     expect(await screen.findByRole('alert')).toHaveTextContent('Missing required column(s): close.')
-    const call = spy.mock.calls.find(([u]) => String(u).includes('/signal-lab/analyze'))!
-    expect(call[1]!.body).toBeInstanceOf(FormData)
+    const calls = spy.mock.calls.filter(([u]) => String(u).includes('/signal-lab/analyze'))
+    expect(calls).toHaveLength(1)
+    expect(calls[0][1]!.body).toBeInstanceOf(FormData)
+    // and it can be re-run explicitly
+    await userEvent.click(screen.getByRole('button', { name: /Analyze dataset/ }))
+    await waitFor(() => expect(spy.mock.calls.filter(([u]) => String(u).includes('/signal-lab/analyze'))).toHaveLength(2))
+  })
+
+  it('accepts Excel files and files dropped anywhere on the page', async () => {
+    const spy = mockApi({ '/data/universe': [], '/signal-lab/analyze': () =>
+      new Response(JSON.stringify({ detail: 'nope' }), { status: 422 }) })
+    renderAt('/signal-lab')
+    const inp = await screen.findByLabelText('Choose dataset file')
+    expect(inp.getAttribute('accept')).toContain('.xlsx')
+    expect(screen.getByRole('button', { name: /Upload a dataset/ })).toBeInTheDocument()
+    const xl = new File(['PK'], 'TCS.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+    const ev = new Event('drop', { bubbles: true, cancelable: true }) as Event & { dataTransfer: unknown }
+    ev.dataTransfer = { files: [xl], types: ['Files'] }
+    window.dispatchEvent(ev)
+    expect(ev.defaultPrevented).toBe(true)  // browser does not navigate to the file
+    expect(await screen.findByText('TCS.xlsx')).toBeInTheDocument()
+    await waitFor(() => expect(spy.mock.calls.some(([u]) => String(u).includes('/signal-lab/analyze'))).toBe(true))
   })
 
   it('blocks analysis when capital is below the minimum', async () => {

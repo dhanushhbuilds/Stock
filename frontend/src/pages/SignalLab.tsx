@@ -348,39 +348,64 @@ export function SignalLab() {
     mutationFn: (v: { kind: 'file'; file: File } | { kind: 'symbol'; symbol: string }) =>
       v.kind === 'file' ? postUpload(v.file, Number(capital)) : postSymbol(v.symbol, Number(capital)),
   })
-  const onDrop = (e: DragEvent) => {
-    e.preventDefault()
-    setDrag(false)
-    const f = e.dataTransfer.files?.[0]
-    if (f) setFile(f)
-  }
   const cap = Number(capital)
   const capOk = Number.isFinite(cap) && cap >= 10000
+  const pick = (f: File | null | undefined) => {
+    if (!f) return
+    setFile(f)
+    if (capOk) run.mutate({ kind: 'file', file: f })  // start straight away — no second click needed
+  }
+  const onDrop = (e: DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDrag(false)
+    pick(e.dataTransfer.files?.[0])
+  }
+  const pickRef = useRef(pick)
+  useEffect(() => { pickRef.current = pick })
+  // A file dropped anywhere on the page is captured here instead of the browser navigating away to open it.
+  useEffect(() => {
+    const over = (e: globalThis.DragEvent) => { if (e.dataTransfer?.types.includes('Files')) e.preventDefault() }
+    const drop = (e: globalThis.DragEvent) => {
+      if (!e.dataTransfer?.files.length) return
+      e.preventDefault()
+      pickRef.current(e.dataTransfer.files[0])
+    }
+    window.addEventListener('dragover', over)
+    window.addEventListener('drop', drop)
+    return () => { window.removeEventListener('dragover', over); window.removeEventListener('drop', drop) }
+  }, [])
 
   return (
     <div className="flex flex-col gap-5">
       <PageHeader eyebrow="Signal Lab" title="Any stock. One clear answer." subtitle="Upload any daily price file, or pick a NIFTY 50 stock. The models forecast, the rules propose, the risk engine decides — with every reason shown." />
       <section className="tile-raised fade-in grid gap-6 rounded-[32px] p-7 lg:grid-cols-[1.4fr_1fr]">
         <div
+          role="button" tabIndex={0} aria-label="Upload a dataset: click to choose a file or drop one here"
+          onClick={() => input.current?.click()}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.current?.click() } }}
+          onDragEnter={(e) => { e.preventDefault(); setDrag(true) }}
           onDragOver={(e) => { e.preventDefault(); setDrag(true) }} onDragLeave={() => setDrag(false)} onDrop={onDrop}
-          className={cn('flex min-h-[200px] flex-col items-center justify-center rounded-[22px] border border-dashed p-6 text-center transition-colors',
-            drag ? 'border-white/60 bg-white/[0.08]' : 'border-white/[0.16] bg-white/[0.025]')}>
-          <div className="grid size-12 place-items-center rounded-2xl bg-white/[0.07] ring-1 ring-inset ring-white/10"><FileUp className="size-5 text-fg/80" /></div>
+          className={cn('group flex min-h-[200px] cursor-pointer flex-col items-center justify-center rounded-[22px] border border-dashed p-6 text-center outline-none transition-colors focus-visible:ring-2 focus-visible:ring-white/60',
+            drag ? 'border-white/60 bg-white/[0.08]' : 'border-white/[0.16] bg-white/[0.025] hover:border-white/35 hover:bg-white/[0.05]')}>
+          <div className="grid size-12 place-items-center rounded-2xl bg-white/[0.07] ring-1 ring-inset ring-white/10 transition-transform group-hover:scale-105"><FileUp className="size-5 text-fg/80" /></div>
           {file ? (
             <div className="mt-3 flex items-center gap-2 text-[14px]"><span className="font-medium">{file.name}</span>
               <span className="text-dim">{(file.size / 1024).toFixed(0)} KB</span>
-              <button type="button" aria-label="Remove file" onClick={() => setFile(null)} className="rounded-full p-1 text-dim hover:bg-white/10 hover:text-fg"><X className="size-3.5" /></button>
+              <button type="button" aria-label="Remove file" onClick={(e) => { e.stopPropagation(); setFile(null); run.reset() }} className="rounded-full p-1 text-dim hover:bg-white/10 hover:text-fg"><X className="size-3.5" /></button>
             </div>
           ) : (
-            <p className="mt-3 text-[14px] text-fg/90">Drop a CSV here, or <button type="button" className="text-fg underline decoration-white/30 underline-offset-4 hover:decoration-white" onClick={() => input.current?.click()}>browse</button></p>
+            <p className="mt-3 text-[14px] text-fg/90">Click to choose a file, or drop it anywhere</p>
           )}
-          <p className="mt-1.5 text-[12px] text-dim">Date, Open, High, Low, Close, Volume · Yahoo / NSE / broker exports · optional Symbol column · ≥ 260 days</p>
-          <input ref={input} type="file" accept=".csv,text/csv" className="hidden" aria-label="Choose dataset file"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+          <p className="mt-1.5 text-[12px] text-dim">CSV, TSV or Excel · Date, Open, High, Low, Close, Volume · Yahoo / NSE / broker exports · optional Symbol column · ≥ 260 days</p>
+          <input ref={input} type="file" className="sr-only" aria-label="Choose dataset file" tabIndex={-1}
+            accept=".csv,.tsv,.txt,.xlsx,.xls,text/csv,text/tab-separated-values,text/plain,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) => { pick(e.target.files?.[0]); e.target.value = '' }} />
           <div className="mt-5 flex items-center gap-2">
-            <Button variant="primary" size="lg" disabled={!file || !capOk || run.isPending} onClick={() => file && run.mutate({ kind: 'file', file })}>
+            <span onClick={(e) => e.stopPropagation()}><Button variant="primary" size="lg" disabled={!file || !capOk || run.isPending} onClick={() => file && run.mutate({ kind: 'file', file })}>
               <Sparkles className="size-4" />Analyze dataset
-            </Button>
+            </Button></span>
           </div>
         </div>
         <div className="flex flex-col gap-4">
