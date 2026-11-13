@@ -44,7 +44,7 @@ export function News() {
           </Button>
         ))}
       </PageHeader>
-      <div className="flex flex-col gap-3 p-3">
+      <div className="flex flex-col gap-5">
         {ingest.data && (
           <div role="status" className="num border border-up/40 bg-up/10 px-3 py-1.5 text-[12px] text-up">
             {ingest.data.received} received · {ingest.data.inserted} new · {ingest.data.duplicates} duplicates ·{' '}

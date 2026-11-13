@@ -124,35 +124,39 @@ function Gauge({ value }: { value: number }) {
   )
 }
 
+const VERDICT_DOT: Record<Action, string> = { BUY: 'bg-up', SELL: 'bg-down', HOLD: 'bg-ink', NO_TRADE: 'bg-[#86868b]' }
+
 function Verdict({ r }: { r: SymbolResult }) {
   const f = r.final
   const st = ACTION_STYLE[f.action]
   const rv = f.risk
   const riskAmt = rv?.approved && rv.stop != null ? rv.quantity * (f.close - rv.stop) : null
+  const cells: [string, string][] = [
+    ['Last close', `₹${num(f.close)}`],
+    ['Quantity', rv?.approved ? int(rv.quantity) : f.action === 'HOLD' ? int(f.position) : '—'],
+    ['Stop-loss', rv?.approved ? `₹${num(rv.stop)}` : f.stop ? `₹${num(f.stop)}` : '—'],
+    ['Target (2R)', rv?.approved ? `₹${num(rv.target)}` : '—'],
+    ['Capital at risk', riskAmt != null ? `₹${int(riskAmt)}` : '—'],
+    ['Model score', f.score != null ? `${f.score >= 0 ? '+' : ''}${f.score.toFixed(2)}` : '—'],
+  ]
   return (
-    <section className={cn('glass-strong fade-in grid gap-6 rounded-[28px] p-7 lg:grid-cols-[1.1fr_1fr]', st.glow)} aria-label="Final signal">
+    <section className="tile-light fade-in grid gap-8 rounded-[32px] p-8 md:p-10 lg:grid-cols-[1.15fr_1fr]" aria-label="Final signal">
       <div>
-        <div className="flex items-center gap-2 text-[13px] text-muted">
-          <span className="font-semibold text-fg">{r.symbol}</span> · signal for the session after {f.date}
+        <div className="flex items-center gap-2 text-[14px] text-[#6e6e73]">
+          <span className={cn('size-2.5 rounded-full', VERDICT_DOT[f.action])} />
+          <span className="font-semibold text-ink">{r.symbol}</span> · for the session after {f.date}
         </div>
-        <div className={cn('mt-3 text-[64px] font-bold leading-none tracking-[-0.04em]', st.color)} data-testid="verdict">{st.label}</div>
-        <p className="mt-4 max-w-[46ch] text-[15px] leading-snug text-fg/90">{f.next_session}</p>
-        <ul className="mt-4 space-y-1.5 text-[13px] text-muted">
-          {f.reasons.map((x) => <li key={x} className="flex gap-2"><span className="mt-[7px] size-1 shrink-0 rounded-full bg-white/40" />{x}</li>)}
+        <div className="headline mt-4 text-[88px] text-ink md:text-[112px]" data-testid="verdict">{st.label}</div>
+        <p className="mt-5 max-w-[42ch] text-[19px] font-medium leading-snug text-ink">{f.next_session}</p>
+        <ul className="mt-4 space-y-1.5 text-[14px] text-[#424245]">
+          {f.reasons.map((x) => <li key={x} className="flex gap-2.5"><span className="mt-[8px] size-1 shrink-0 rounded-full bg-[#86868b]" />{x}</li>)}
         </ul>
       </div>
-      <div className="grid grid-cols-2 gap-px self-start overflow-hidden rounded-2xl bg-white/[0.06] ring-1 ring-inset ring-white/[0.08]">
-        {[
-          ['Last close', `₹${num(f.close)}`],
-          ['Quantity', rv?.approved ? int(rv.quantity) : f.action === 'HOLD' ? int(f.position) : '—'],
-          ['Stop-loss', rv?.approved ? `₹${num(rv.stop)}` : f.stop ? `₹${num(f.stop)}` : '—'],
-          ['Target (2R)', rv?.approved ? `₹${num(rv.target)}` : '—'],
-          ['Capital at risk', riskAmt != null ? `₹${int(riskAmt)}` : '—'],
-          ['Model confidence', f.score != null ? `${f.score >= 0 ? '+' : ''}${f.score.toFixed(2)}` : '—'],
-        ].map(([k, v]) => (
-          <div key={k} className="bg-[#0d0f14]/70 px-4 py-3.5">
-            <div className="text-[11.5px] text-muted">{k}</div>
-            <div className="num mt-0.5 text-[19px] font-semibold tracking-tight">{v}</div>
+      <div className="grid grid-cols-2 gap-2.5 self-center">
+        {cells.map(([k, v]) => (
+          <div key={k} className="rounded-[20px] bg-[#f0f0f3] px-5 py-4">
+            <div className="text-[12px] font-medium text-[#6e6e73]">{k}</div>
+            <div className="num headline mt-1 text-[26px] text-ink">{v}</div>
           </div>
         ))}
       </div>
@@ -164,9 +168,9 @@ function Drivers({ r }: { r: SymbolResult }) {
   const f = r.final
   const dist = f.sma200 ? f.close / f.sma200 - 1 : null
   return (
-    <div className="grid gap-3 md:grid-cols-3">
+    <div className="grid gap-5 md:grid-cols-3">
       <Panel title="Trend" right={<Badge tone={f.uptrend ? 'up' : 'muted'}>{f.uptrend ? 'Uptrend' : 'No uptrend'}</Badge>} padded>
-        <div className="num text-[28px] font-semibold tracking-tight">{pct(dist, 1)}</div>
+        <div className="num headline text-[40px]">{pct(dist, 1)}</div>
         <div className="text-[12px] text-muted">vs 200-day average (₹{num(f.sma200)}). 50-day ₹{num(f.sma50)}.</div>
       </Panel>
       <Panel title="AI direction model" right={<Badge tone="warn">research</Badge>} padded>
@@ -174,7 +178,7 @@ function Drivers({ r }: { r: SymbolResult }) {
         <div className="mt-3 text-[11.5px] text-dim">Next 5 sessions vs the market. Used to confirm, never alone.</div>
       </Panel>
       <Panel title="AI volatility forecast" right={<Badge tone="up">promoted</Badge>} padded>
-        <div className="num text-[28px] font-semibold tracking-tight">{pct(f.vol_pred_annual, 1)}</div>
+        <div className="num headline text-[40px]">{pct(f.vol_pred_annual, 1)}</div>
         <div className="mb-3 text-[12px] text-muted">annualised, next 5 sessions · {pct(f.vol_pct, 0)} percentile of its own history</div>
         {f.vol_pct != null && <Gauge value={f.vol_pct} />}
       </Panel>
@@ -261,21 +265,23 @@ function Backtest({ r }: { r: SymbolResult }) {
 
 function Results({ data }: { data: LabResult }) {
   const [sym, setSym] = useState(data.results[0]?.symbol)
+  const [mode, setMode] = useState<'area' | 'candles'>('area')
   const r = data.results.find((x) => x.symbol === sym) ?? data.results[0]
   const candles = useMemo(() => (r?.days ?? []).map((d) => ({ ts: `${d.date}T00:00:00+05:30`, open: d.open, high: d.high, low: d.low, close: d.close, volume: d.volume })), [r])
   const markers = useMemo(() => (r?.days ?? []).filter((d) => d.action === 'BUY' || d.action === 'SELL').map((d) => ({ ts: `${d.date}T00:00:00+05:30`, side: d.action as 'BUY' | 'SELL' })), [r])
-  const lines = useMemo(() => [{ name: 'SMA200', color: 'rgba(255,255,255,0.55)', points: (r?.days ?? []).map((d) => ({ ts: `${d.date}T00:00:00+05:30`, value: d.sma200 })) }], [r])
+  const lines = useMemo(() => [{ name: 'SMA200', color: 'rgba(255,255,255,0.45)', points: (r?.days ?? []).map((d) => ({ ts: `${d.date}T00:00:00+05:30`, value: d.sma200 })) }], [r])
   if (!r) return null
   if (r.error) return <Note>{r.symbol}: {r.error}</Note>
   const recent = [...r.days].reverse().slice(0, 30)
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
       {data.results.length > 1 && <Segmented label="Symbol" value={r.symbol} onChange={setSym} options={data.results.map((x) => [x.symbol, x.symbol] as const)} />}
       <Verdict r={r} />
       <Drivers r={r} />
-      <div className="grid gap-4 xl:grid-cols-[1.7fr_1fr]">
-        <Panel title="Price, signals and 200-day average" right={<div className="flex gap-2"><Badge tone="up">▲ BUY</Badge><Badge tone="down">▼ SELL</Badge></div>}>
-          <div className="h-[420px] px-2 pb-2"><CandleChart candles={candles} intraday={false} markers={markers} lines={lines} /></div>
+      <div className="grid gap-5 xl:grid-cols-[1.7fr_1fr]">
+        <Panel tone="raised" title={`${r.symbol} · price and signals`} right={<Segmented label="Chart type" value={mode} onChange={setMode} options={[['area', 'Line'], ['candles', 'Candles']] as const} />}>
+          <div className="flex items-center gap-4 px-6 text-[12px] text-dim"><span>▲ white = BUY</span><span>▼ grey = SELL</span><span>- - 200-day average</span></div>
+          <div className="h-[440px] px-2 pb-3"><CandleChart candles={candles} intraday={false} markers={markers} lines={lines} mode={mode} height={430} /></div>
         </Panel>
         <RiskPanel r={r} />
       </div>
@@ -352,9 +358,9 @@ export function SignalLab() {
   const capOk = Number.isFinite(cap) && cap >= 10000
 
   return (
-    <div className="flex flex-col gap-4 px-2 pb-6">
-      <PageHeader title="Signal Lab" subtitle="Upload any daily OHLCV dataset. Get a risk-evaluated BUY · SELL · HOLD with the reasons, in seconds." />
-      <section className="glass-strong grid gap-5 rounded-[28px] p-6 lg:grid-cols-[1.4fr_1fr]">
+    <div className="flex flex-col gap-5">
+      <PageHeader eyebrow="Signal Lab" title="Any stock. One clear answer." subtitle="Upload any daily price file, or pick a NIFTY 50 stock. The models forecast, the rules propose, the risk engine decides — with every reason shown." />
+      <section className="tile-raised fade-in grid gap-6 rounded-[32px] p-7 lg:grid-cols-[1.4fr_1fr]">
         <div
           onDragOver={(e) => { e.preventDefault(); setDrag(true) }} onDragLeave={() => setDrag(false)} onDrop={onDrop}
           className={cn('flex min-h-[200px] flex-col items-center justify-center rounded-[22px] border border-dashed p-6 text-center transition-colors',

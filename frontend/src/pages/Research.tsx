@@ -111,7 +111,7 @@ export function Research() {
       <PageHeader title="AI Research">
         <Segmented label="Pipeline" value={pipeline} onChange={setPipeline} options={[['swing', 'Swing'], ['intraday', 'Intraday'], ['volatility', 'Volatility']] as const} />
       </PageHeader>
-      <div className="flex flex-col gap-3 p-3">
+      <div className="flex flex-col gap-5">
         {pipeline === 'volatility' ? <VolatilityPanel /> : (
         <QueryState isPending={runs.isPending} error={runs.error} isEmpty={!run}
           empty={`No ${pipeline} training run yet (python -m app.engines.ml.cli train --pipeline ${pipeline}).`}>

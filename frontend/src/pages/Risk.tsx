@@ -52,7 +52,7 @@ export function Risk() {
   return (
     <>
       <PageHeader title="Risk Centre" />
-      <div className="grid min-w-0 gap-3 p-3 xl:grid-cols-[1fr_2fr]">
+      <div className="grid min-w-0 gap-5 xl:grid-cols-[1fr_2fr]">
         <div className="flex min-w-0 flex-col gap-3">
           <Panel title="Emergency kill switch">
             <QueryState isPending={state.isPending} error={state.error}>

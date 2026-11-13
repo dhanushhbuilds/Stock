@@ -46,7 +46,7 @@ export function Market() {
       <PageHeader title="Market Data">
         <Badge tone="warn">Historical · live feed not connected</Badge>
       </PageHeader>
-      <div className="grid min-w-0 gap-3 p-3 lg:grid-cols-[240px_1fr]">
+      <div className="grid min-w-0 gap-5 lg:grid-cols-[240px_1fr]">
         <Panel title="NIFTY 50" className="max-h-[calc(100vh-120px)]">
           <QueryState isPending={universe.isPending} error={universe.error} isEmpty={!universe.data?.length}>
             <ul className="max-h-[calc(100vh-170px)] overflow-auto py-1" aria-label="Universe">
@@ -85,7 +85,7 @@ export function Market() {
           <Panel title={`Data quality (${tf === '5minute' ? '1-minute source' : 'daily'})`}>
             <QueryState isPending={quality.isPending} error={quality.error}>
               {quality.data && (
-                <div className="grid min-w-0 gap-3 p-3 md:grid-cols-[auto_1fr]">
+                <div className="grid min-w-0 gap-5 md:grid-cols-[auto_1fr]">
                   <div className="flex flex-col items-start gap-1">
                     <Badge tone={quality.data.passed ? 'up' : 'down'}>{quality.data.passed ? 'Passed' : 'Failed'}</Badge>
                     <span className="num text-muted">{int(quality.data.rows)} rows · {int(quality.data.trading_days)} sessions</span>

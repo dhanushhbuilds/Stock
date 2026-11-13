@@ -45,7 +45,7 @@ export function StrategyLab() {
       <PageHeader title="Strategy Lab">
         <Segmented label="Period" value={period} onChange={setPeriod} options={[['out_of_sample', 'Out of sample 2020→'], ['in_sample', 'In sample 2017–2019']] as const} />
       </PageHeader>
-      <div className="flex flex-col gap-3 p-3">
+      <div className="flex flex-col gap-5">
         <QueryState isPending={rep.isPending} error={rep.error} isEmpty={!strategies.length}
           empty="No backtest report yet (python -m app.engines.strategy.runner).">
           <Panel title="Backtest results (after full NSE/Upstox charges + slippage)">

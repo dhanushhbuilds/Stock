@@ -40,7 +40,7 @@ export function Settings() {
   return (
     <>
       <PageHeader title="Settings" />
-      <div className="grid min-w-0 gap-3 p-3 xl:grid-cols-[2fr_1fr]">
+      <div className="grid min-w-0 gap-5 xl:grid-cols-[2fr_1fr]">
         <Panel title="Risk limits" right={save.isSuccess && <Badge tone="up">saved</Badge>}>
           <QueryState isPending={state.isPending} error={state.error}>
             <form onSubmit={submit} className="grid gap-2 p-3 sm:grid-cols-2">
