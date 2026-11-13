@@ -87,7 +87,7 @@ export function News() {
                     <td>{n.sentiment && <Badge tone={n.sentiment === 'positive' ? 'up' : n.sentiment === 'negative' ? 'down' : 'muted'}>{n.sentiment}</Badge>}</td>
                     <td className={`num ${tone(n.sentiment_score)}`}>{signed(n.sentiment_score, 2)}</td>
                     <td className="max-w-[560px] truncate">
-                      <a href={n.url} target="_blank" rel="noreferrer noopener" className="hover:text-info" title={n.title}>{n.title}</a>
+                      <a href={n.url} target="_blank" rel="noreferrer noopener" className="hover:text-white" title={n.title}>{n.title}</a>
                     </td>
                   </tr>
                 ))}

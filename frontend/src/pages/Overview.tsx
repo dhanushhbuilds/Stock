@@ -72,12 +72,12 @@ export function Overview() {
             <div className="grid grid-cols-3">
               <Stat label="Candles" value={compact(rows)} sub={`${int(rows)} rows`} />
               <Stat label="Instruments" value={int(instruments)} />
-              <Stat label="Quality checks" value={`${checked.filter((c) => c.quality_passed).length}/${checked.length}`}
-                valueClass={checked.every((c) => c.quality_passed) ? 'text-up' : 'text-warn'} sub="passed" />
+              <Stat label="Quality" value={checked.filter((c) => c.quality_passed).length}
+                valueClass={checked.every((c) => c.quality_passed) ? 'text-up' : 'text-warn'} sub={`of ${checked.length} checks passed`} />
             </div>
           </QueryState>
         </Panel>
-        <Panel title="Model registry" right={<Link to="/research" className="text-[11px] text-info hover:underline">Research →</Link>}>
+        <Panel title="Model registry" right={<Link to="/research" className="text-[11.5px] text-muted hover:text-white">Research →</Link>}>
           <QueryState isPending={models.isPending} error={models.error} isEmpty={!modelList.length}
             empty="No models trained yet.">
             <div className="grid grid-cols-2">
@@ -100,7 +100,7 @@ export function Overview() {
             </>
           }>
           <QueryState isPending={decisions.isPending} error={decisions.error} isEmpty={!latest.length}
-            empty={<span>No swing decisions: the direction model did not pass the promotion gate, so the live engine refuses to decide. For risk-evaluated BUY · SELL · HOLD on any stock or dataset, use <Link to="/signal-lab" className="text-[#5ac8fa] hover:underline">Signal Lab →</Link></span>}>
+            empty={<span>No swing decisions: the direction model did not pass the promotion gate, so the live engine refuses to decide. For risk-evaluated BUY · SELL · HOLD on any stock or dataset, use <Link to="/signal-lab" className="text-fg underline decoration-white/30 underline-offset-4 hover:decoration-white">Signal Lab →</Link></span>}>
             <div className="flex gap-2 border-b border-line px-3 py-1.5">
               {Object.entries(counts).map(([a, n]) => (
                 <span key={a} className="flex items-center gap-1.5"><ActionBadge action={a as Decision['action']} />
@@ -126,7 +126,7 @@ export function Overview() {
           </QueryState>
         </Panel>
 
-        <Panel title="Best strategies (out of sample)" right={<Link to="/strategy" className="text-[11px] text-info hover:underline">Lab →</Link>}>
+        <Panel title="Best strategies (out of sample)" right={<Link to="/strategy" className="text-[11.5px] text-muted hover:text-white">Lab →</Link>}>
           <QueryState isPending={strat.isPending} error={strat.error} isEmpty={!top.length}>
             <Table dense head={['Strategy', 'Sharpe', 'Max DD', 'Total']}>
               {top.map(([k, v]) => (
@@ -150,7 +150,7 @@ export function Overview() {
         </Panel>
 
         <Panel className="xl:col-span-3" title="Latest news (NSE · RBI · SEBI)"
-          right={<Link to="/news" className="text-[11px] text-info hover:underline">News →</Link>}>
+          right={<Link to="/news" className="text-[11.5px] text-muted hover:text-white">News →</Link>}>
           <QueryState isPending={news.isPending} error={news.error} isEmpty={!Array.isArray(news.data) || !news.data.length}
             empty="No news ingested yet — use the News page to fetch the official feeds.">
             <Table dense head={['Time', 'Source', 'Symbols', 'Event', 'Sentiment', 'Headline']}>

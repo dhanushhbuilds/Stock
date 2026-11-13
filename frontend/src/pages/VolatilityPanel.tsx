@@ -20,7 +20,7 @@ const LABEL: Record<string, string> = {
   harx: 'HAR-X (+ VIX, market, range)',
   lightgbm: 'LightGBM (all 77 features)',
 }
-const COLORS: Record<string, string> = { persistence: '#5c6470', har: '#8a929e', harx: '#5b9bd5', lightgbm: '#26a269' }
+const COLORS: Record<string, string> = { persistence: '#48484a', har: '#7c7c80', harx: '#c7c7cc', lightgbm: '#ffffff' }
 
 export function VolatilityPanel() {
   const runs = useQuery({ queryKey: ['runs'], queryFn: () => apiGet<Run[]>('/ml/runs') })
@@ -85,7 +85,7 @@ export function VolatilityPanel() {
           <div className="h-[280px] p-2">
             <ResponsiveContainer>
               <BarChart data={folds} margin={{ left: 8, right: 8 }}>
-                <CartesianGrid stroke="var(--color-line)" vertical={false} />
+                <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} />
                 <XAxis dataKey="window" tick={{ fill: 'var(--color-muted)', fontSize: 10 }} />
                 <YAxis tick={{ fill: 'var(--color-muted)', fontSize: 10 }} width={40} />
                 <Tooltip contentStyle={{ background: 'var(--color-panel-2)', border: '1px solid var(--color-line)', fontSize: 11 }} />

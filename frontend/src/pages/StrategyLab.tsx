@@ -13,7 +13,7 @@ type Report = Record<string, StrategyResult | Record<string, unknown>> & {
   _benchmark_nifty50_index?: { in_sample: Perf; out_of_sample: Perf }
   _meta?: { capital: number; symbols: number; run_date: string; notes: string[]; round_trip_cost_pct_on_20k_delivery: number }
 }
-const COLORS = ['#5b9bd5', '#26a269', '#d9a23a', '#c678dd', '#56b6c2', '#e0524a']
+const COLORS = ['#f5f5f7', '#a1a1a6', '#6fd59a', '#6e6e73', '#d4d4d8', '#48484a']
 
 export function StrategyLab() {
   const [period, setPeriod] = useState<'out_of_sample' | 'in_sample'>('out_of_sample')
@@ -59,7 +59,7 @@ export function StrategyLab() {
                         checked={visible.includes(k)}
                         onChange={(e) => setShown(e.target.checked ? [...visible, k] : visible.filter((x) => x !== k))} />
                     </td>
-                    <td><button type="button" className="text-left hover:text-info" onClick={() => setRegimeOf(k)}
+                    <td><button type="button" className="text-left hover:text-white" onClick={() => setRegimeOf(k)}
                       title={v.description}>{k.replaceAll('_', ' ')}</button></td>
                     <td><Badge tone={v.timeframe === '1day' ? 'info' : 'warn'}>{v.timeframe === '1day' ? 'daily' : 'intraday'}</Badge></td>
                     <td className={`num ${tone(s?.total_return)}`}>{pct(s?.total_return)}</td>
@@ -91,7 +91,7 @@ export function StrategyLab() {
               <div className="h-[340px] p-2">
                 <ResponsiveContainer>
                   <LineChart data={curve} margin={{ left: 8, right: 8 }}>
-                    <CartesianGrid stroke="var(--color-line)" vertical={false} />
+                    <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} />
                     <XAxis dataKey="date" minTickGap={60} tick={{ fill: 'var(--color-muted)', fontSize: 10 }} />
                     <YAxis tick={{ fill: 'var(--color-muted)', fontSize: 10 }} width={40} />
                     <Tooltip contentStyle={{ background: 'var(--color-panel-2)', border: '1px solid var(--color-line)', fontSize: 11 }} />

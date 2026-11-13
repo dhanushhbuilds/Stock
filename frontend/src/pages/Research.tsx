@@ -9,7 +9,7 @@ import { apiGet, type Experiment, type Metrics, type RegisteredModel, type Run }
 import { dateTime, num, pct, tone } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
-const COLORS = ['#5b9bd5', '#26a269', '#d9a23a', '#c678dd', '#e0524a', '#56b6c2']
+const COLORS = ['#f5f5f7', '#a1a1a6', '#6fd59a', '#6e6e73', '#d4d4d8', '#48484a']
 const PIPE = {
   swing: 'Swing · daily bars → next 5 sessions (label: excess return vs universe)',
   intraday: 'Intraday · 5-min bars → next 30 minutes',
@@ -154,7 +154,7 @@ export function Research() {
                 <div className="h-[300px] p-2">
                   <ResponsiveContainer>
                     <BarChart data={foldData} margin={{ left: 8, right: 8 }}>
-                      <CartesianGrid stroke="var(--color-line)" vertical={false} />
+                      <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} />
                       <XAxis dataKey="window" tick={{ fill: 'var(--color-muted)', fontSize: 10 }} />
                       <YAxis tick={{ fill: 'var(--color-muted)', fontSize: 10 }} width={52} />
                       <Tooltip contentStyle={{ background: 'var(--color-panel-2)', border: '1px solid var(--color-line)', fontSize: 11 }} />
@@ -181,7 +181,7 @@ export function Research() {
                               <th className="pr-2 text-right text-[10px] text-dim">{['true DOWN', 'true NEUTRAL', 'true UP'][i]}</th>
                               {r.map((v, j) => (
                                 <td key={j} className={cn('border border-line py-2', i === j && 'text-up')}
-                                  style={{ background: `color-mix(in srgb, var(--color-info) ${Math.round((v / tot) * 60)}%, transparent)` }}>
+                                  style={{ background: `color-mix(in srgb, #ffffff ${Math.round((v / tot) * 60)}%, transparent)` }}>
                                   {v.toLocaleString('en-IN')}<div className="text-[10px] text-muted">{pct(v / tot, 0)}</div>
                                 </td>
                               ))}

@@ -23,8 +23,8 @@ export function CandleChart({ candles, intraday, markers = [], lines = [] }: {
 
   useEffect(() => {
     if (!el.current) return
-    const up = '#30d158'
-    const down = '#ff453a'
+    const up = '#6fd59a'
+    const down = '#ff7a6b'
     const c = createChart(el.current, {
       autoSize: true,
       layout: { background: { type: ColorType.Solid, color: 'transparent' }, textColor: 'rgba(235,235,245,0.55)',
@@ -40,7 +40,7 @@ export function CandleChart({ candles, intraday, markers = [], lines = [] }: {
     const v = c.addSeries(HistogramSeries, { priceFormat: { type: 'volume' }, priceScaleId: 'vol' })
     c.priceScale('vol').applyOptions({ scaleMargins: { top: 0.84, bottom: 0 } })
     s.setData(candles.map((k) => ({ time: t(k.ts), open: k.open, high: k.high, low: k.low, close: k.close })))
-    v.setData(candles.map((k) => ({ time: t(k.ts), value: k.volume, color: k.close >= k.open ? 'rgba(48,209,88,0.28)' : 'rgba(255,69,58,0.28)' })))
+    v.setData(candles.map((k) => ({ time: t(k.ts), value: k.volume, color: k.close >= k.open ? 'rgba(111,213,154,0.22)' : 'rgba(255,122,107,0.22)' })))
     for (const ln of lines) {
       const l = c.addSeries(LineSeries, { color: ln.color, lineWidth: 2, priceLineVisible: false, lastValueVisible: false,
         crosshairMarkerVisible: false })

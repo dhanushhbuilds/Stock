@@ -1,77 +1,110 @@
 @import "tailwindcss";
 
-/* AstraQuant design language: dark glass, Apple system colours, quiet typography. */
+/* AstraQuant design language — graphite & frosted glass over chrome.
+   Monochrome first; colour only where it carries meaning (gain / loss / caution). */
 @theme {
-  --color-bg: #050608;
-  --color-panel: rgba(255, 255, 255, 0.045);
-  --color-panel-2: rgba(255, 255, 255, 0.075);
-  --color-line: rgba(255, 255, 255, 0.085);
-  --color-fg: #f5f5f7;
-  --color-muted: rgba(235, 235, 245, 0.62);
-  --color-dim: rgba(235, 235, 245, 0.38);
-  --color-up: #30d158;
-  --color-down: #ff453a;
-  --color-warn: #ffd60a;
-  --color-info: #0a84ff;
-  --color-violet: #bf5af2;
-  --color-teal: #64d2ff;
+  --color-bg: #08080a;
+  --color-panel: rgba(255, 255, 255, 0.035);
+  --color-panel-2: rgba(255, 255, 255, 0.07);
+  --color-line: rgba(255, 255, 255, 0.09);
+  --color-fg: #ececec;
+  --color-muted: rgba(236, 236, 236, 0.56);
+  --color-dim: rgba(236, 236, 236, 0.34);
+  --color-up: #6fd59a;     /* soft mint */
+  --color-down: #ff7a6b;   /* soft coral */
+  --color-warn: #e9c46a;   /* warm sand */
+  --color-info: #d6d6d6;   /* silver — the only "accent" */
+  --color-silver: #c7c7cc;
 
-  --font-sans: -apple-system, "SF Pro Display", "SF Pro Text", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: -apple-system, "SF Pro Display", "SF Pro Text", "Inter", "Helvetica Neue", ui-sans-serif, sans-serif;
   --font-mono: "SF Mono", "JetBrains Mono", ui-monospace, Menlo, monospace;
 
-  --radius-card: 22px;
+  --radius-card: 24px;
 }
 
 html, body, #root { height: 100%; }
 
 body {
   margin: 0;
-  background: var(--color-bg);
+  background:
+    radial-gradient(120% 80% at 50% -10%, #1b1b1f 0%, #0b0b0d 55%, #060607 100%) fixed;
   color: var(--color-fg);
   font-family: var(--font-sans);
   font-size: 13px;
+  font-weight: 400;
   letter-spacing: -0.003em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Ambient light: three very soft, slowly drifting colour fields behind the glass. */
-.ambient { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
-.ambient::before, .ambient::after, .ambient > i {
-  content: ""; position: absolute; border-radius: 9999px; filter: blur(110px); opacity: 0.32;
-  animation: drift 28s ease-in-out infinite alternate;
+/* ---------- Chrome objects behind the glass (pure CSS) ---------- */
+.scene { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.chrome { position: absolute; border-radius: 9999px; animation: float 26s ease-in-out infinite alternate; }
+/* liquid-metal sphere */
+.chrome.sphere {
+  background:
+    radial-gradient(circle at 32% 26%, #ffffff 0%, #f1f1f1 7%, #bdbdbd 18%, #6e6e72 38%, #2a2a2d 62%, #0d0d0f 82%),
+    #111;
+  box-shadow: inset -18px -24px 50px rgba(0, 0, 0, 0.75), inset 10px 10px 30px rgba(255, 255, 255, 0.25),
+    0 40px 80px -30px rgba(0, 0, 0, 0.9);
 }
-.ambient::before { width: 46vw; height: 46vw; left: -10vw; top: -14vw; background: #0a84ff; }
-.ambient::after { width: 40vw; height: 40vw; right: -12vw; top: 8vh; background: #5e5ce6; animation-delay: -9s; opacity: 0.22; }
-.ambient > i { width: 38vw; height: 38vw; left: 30vw; bottom: -22vw; background: #30d158; opacity: 0.12; animation-delay: -18s; }
-@keyframes drift { from { transform: translate3d(0, 0, 0) scale(1); } to { transform: translate3d(3vw, 2vh, 0) scale(1.08); } }
-@media (prefers-reduced-motion: reduce) { .ambient::before, .ambient::after, .ambient > i { animation: none; } }
+/* polished torus seen at an angle */
+.chrome.torus {
+  background: conic-gradient(from 200deg, #0f0f10, #f4f4f4 9%, #545458 20%, #e0e0e2 33%, #1c1c1e 46%,
+    #fafafa 58%, #5d5d61 70%, #d4d4d6 83%, #0f0f10);
+  -webkit-mask: radial-gradient(closest-side, transparent 52%, #000 53.5%, #000 98%, transparent 100%);
+  mask: radial-gradient(closest-side, transparent 52%, #000 53.5%, #000 98%, transparent 100%);
+  filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.8)) contrast(1.05);
+}
+.s1 { width: 300px; height: 300px; right: 7vw; top: 6vh; animation-duration: 30s; }
+.s2 { width: 130px; height: 130px; left: 38vw; top: 2vh; animation-delay: -8s; }
+.s3 { width: 80px; height: 80px; right: 2vw; top: 56vh; animation-delay: -15s; }
+.t1 { width: 720px; height: 720px; left: 34vw; bottom: -290px; transform: rotateX(68deg); animation-name: float-tilt; }
+.t2 { width: 420px; height: 420px; left: -110px; top: 28vh; transform: rotate(-35deg) rotateX(62deg); animation-name: float-tilt-2; animation-delay: -12s; }
+@keyframes float { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-14px, 18px, 0); } }
+@keyframes float-tilt { from { transform: rotateX(68deg) rotateZ(0deg); } to { transform: rotateX(64deg) rotateZ(14deg) translateY(-10px); } }
+@keyframes float-tilt-2 { from { transform: rotate(-35deg) rotateX(62deg); } to { transform: rotate(-28deg) rotateX(58deg) translateY(12px); } }
+@media (prefers-reduced-motion: reduce) { .chrome { animation: none; } }
 
+/* ---------- Frosted glass ---------- */
 .glass {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.035));
-  backdrop-filter: blur(28px) saturate(170%);
-  -webkit-backdrop-filter: blur(28px) saturate(170%);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 24px 48px -24px rgba(0, 0, 0, 0.7);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.075) 0%, rgba(255, 255, 255, 0.025) 60%);
+  backdrop-filter: blur(40px) saturate(120%);
+  -webkit-backdrop-filter: blur(40px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10), inset 0 -1px 0 rgba(255, 255, 255, 0.02),
+    0 30px 60px -36px rgba(0, 0, 0, 0.85);
 }
 .glass-strong {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.05));
-  backdrop-filter: blur(36px) saturate(180%);
-  -webkit-backdrop-filter: blur(36px) saturate(180%);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.035) 65%);
+  backdrop-filter: blur(56px) saturate(125%);
+  -webkit-backdrop-filter: blur(56px) saturate(125%);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 40px 90px -40px rgba(0, 0, 0, 0.95);
+}
+/* The app window itself */
+.window {
+  background: linear-gradient(170deg, rgba(44, 44, 48, 0.30) 0%, rgba(16, 16, 18, 0.42) 75%);
+  backdrop-filter: blur(48px) saturate(110%) brightness(0.92);
+  -webkit-backdrop-filter: blur(48px) saturate(110%) brightness(0.92);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 30px 60px -30px rgba(0, 0, 0, 0.8);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 60px 120px -40px rgba(0, 0, 0, 0.95);
 }
 
-.num { font-family: var(--font-sans); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
-.mono { font-family: var(--font-mono); }
+.num { font-variant-numeric: tabular-nums; letter-spacing: -0.012em; }
+.eyebrow { font-size: 10.5px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-dim); }
+.chrome-text {
+  background: linear-gradient(180deg, #ffffff 0%, #d9d9dc 45%, #8e8e93 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
 
-/* Thin, unobtrusive scrollbars */
 * { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.14) transparent; }
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 8px; }
 
 input, select, button { font: inherit; }
-input[type="checkbox"] { accent-color: var(--color-info); }
+input[type="checkbox"] { accent-color: #d6d6d6; }
+select option { background: #1c1c1e; color: #ececec; }
 
-.fade-in { animation: fade 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.fade-in { animation: fade 480ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }

@@ -33,10 +33,10 @@ interface LabResult {
 }
 
 const ACTION_STYLE: Record<Action, { label: string; color: string; glow: string; tone: 'up' | 'down' | 'info' | 'muted' }> = {
-  BUY: { label: 'BUY', color: 'text-up', glow: 'shadow-[0_0_80px_-10px_rgba(48,209,88,0.55)]', tone: 'up' },
-  SELL: { label: 'SELL', color: 'text-down', glow: 'shadow-[0_0_80px_-10px_rgba(255,69,58,0.55)]', tone: 'down' },
-  HOLD: { label: 'HOLD', color: 'text-[#5ac8fa]', glow: 'shadow-[0_0_80px_-10px_rgba(10,132,255,0.55)]', tone: 'info' },
-  NO_TRADE: { label: 'NO TRADE', color: 'text-fg/80', glow: '', tone: 'muted' },
+  BUY: { label: 'BUY', color: 'text-up', glow: 'shadow-[0_0_90px_-20px_rgba(111,213,154,0.45)]', tone: 'up' },
+  SELL: { label: 'SELL', color: 'text-down', glow: 'shadow-[0_0_90px_-20px_rgba(255,122,107,0.45)]', tone: 'down' },
+  HOLD: { label: 'HOLD', color: 'chrome-text', glow: 'shadow-[0_0_90px_-20px_rgba(255,255,255,0.35)]', tone: 'info' },
+  NO_TRADE: { label: 'NO TRADE', color: 'chrome-text', glow: '', tone: 'muted' },
 }
 const STEPS = ['Validating the dataset', 'Engineering 77 features', 'Running the AI models', 'Risk-evaluating every signal']
 
@@ -230,16 +230,16 @@ function Backtest({ r }: { r: SymbolResult }) {
           <ResponsiveContainer>
             <AreaChart data={data} margin={{ left: 0, right: 8, top: 8 }}>
               <defs>
-                <linearGradient id="gS" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#0a84ff" stopOpacity={0.45} /><stop offset="100%" stopColor="#0a84ff" stopOpacity={0} /></linearGradient>
-                <linearGradient id="gH" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#ffffff" stopOpacity={0.12} /><stop offset="100%" stopColor="#ffffff" stopOpacity={0} /></linearGradient>
+                <linearGradient id="gS" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#ffffff" stopOpacity={0.28} /><stop offset="100%" stopColor="#ffffff" stopOpacity={0} /></linearGradient>
+                <linearGradient id="gH" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#8e8e93" stopOpacity={0.10} /><stop offset="100%" stopColor="#8e8e93" stopOpacity={0} /></linearGradient>
               </defs>
               <CartesianGrid stroke="rgba(255,255,255,0.04)" vertical={false} />
               <XAxis dataKey="date" minTickGap={70} tick={{ fill: 'rgba(235,235,245,0.45)', fontSize: 10 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: 'rgba(235,235,245,0.45)', fontSize: 10 }} width={36} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={{ background: 'rgba(28,28,30,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, fontSize: 12, backdropFilter: 'blur(20px)' }}
                 formatter={(v, n) => [`₹${Number(v).toFixed(3)} per ₹1`, n === 'strategy' ? 'AstraQuant signals' : 'Buy & hold']} />
-              <Area dataKey="hold" stroke="rgba(255,255,255,0.45)" strokeDasharray="4 4" fill="url(#gH)" strokeWidth={1.5} isAnimationActive={false} />
-              <Area dataKey="strategy" stroke="#0a84ff" fill="url(#gS)" strokeWidth={2} isAnimationActive={false} />
+              <Area dataKey="hold" stroke="rgba(142,142,147,0.8)" strokeDasharray="4 4" fill="url(#gH)" strokeWidth={1.5} isAnimationActive={false} />
+              <Area dataKey="strategy" stroke="#ffffff" fill="url(#gS)" strokeWidth={2} isAnimationActive={false} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -264,7 +264,7 @@ function Results({ data }: { data: LabResult }) {
   const r = data.results.find((x) => x.symbol === sym) ?? data.results[0]
   const candles = useMemo(() => (r?.days ?? []).map((d) => ({ ts: `${d.date}T00:00:00+05:30`, open: d.open, high: d.high, low: d.low, close: d.close, volume: d.volume })), [r])
   const markers = useMemo(() => (r?.days ?? []).filter((d) => d.action === 'BUY' || d.action === 'SELL').map((d) => ({ ts: `${d.date}T00:00:00+05:30`, side: d.action as 'BUY' | 'SELL' })), [r])
-  const lines = useMemo(() => [{ name: 'SMA200', color: 'rgba(255,214,10,0.8)', points: (r?.days ?? []).map((d) => ({ ts: `${d.date}T00:00:00+05:30`, value: d.sma200 })) }], [r])
+  const lines = useMemo(() => [{ name: 'SMA200', color: 'rgba(255,255,255,0.55)', points: (r?.days ?? []).map((d) => ({ ts: `${d.date}T00:00:00+05:30`, value: d.sma200 })) }], [r])
   if (!r) return null
   if (r.error) return <Note>{r.symbol}: {r.error}</Note>
   const recent = [...r.days].reverse().slice(0, 30)
@@ -358,7 +358,7 @@ export function SignalLab() {
         <div
           onDragOver={(e) => { e.preventDefault(); setDrag(true) }} onDragLeave={() => setDrag(false)} onDrop={onDrop}
           className={cn('flex min-h-[200px] flex-col items-center justify-center rounded-[22px] border border-dashed p-6 text-center transition-colors',
-            drag ? 'border-info bg-info/10' : 'border-white/15 bg-white/[0.02]')}>
+            drag ? 'border-white/60 bg-white/[0.08]' : 'border-white/[0.16] bg-white/[0.025]')}>
           <div className="grid size-12 place-items-center rounded-2xl bg-white/[0.07] ring-1 ring-inset ring-white/10"><FileUp className="size-5 text-fg/80" /></div>
           {file ? (
             <div className="mt-3 flex items-center gap-2 text-[14px]"><span className="font-medium">{file.name}</span>
@@ -366,7 +366,7 @@ export function SignalLab() {
               <button type="button" aria-label="Remove file" onClick={() => setFile(null)} className="rounded-full p-1 text-dim hover:bg-white/10 hover:text-fg"><X className="size-3.5" /></button>
             </div>
           ) : (
-            <p className="mt-3 text-[14px] text-fg/90">Drop a CSV here, or <button type="button" className="text-[#5ac8fa] hover:underline" onClick={() => input.current?.click()}>browse</button></p>
+            <p className="mt-3 text-[14px] text-fg/90">Drop a CSV here, or <button type="button" className="text-fg underline decoration-white/30 underline-offset-4 hover:decoration-white" onClick={() => input.current?.click()}>browse</button></p>
           )}
           <p className="mt-1.5 text-[12px] text-dim">Date, Open, High, Low, Close, Volume · Yahoo / NSE / broker exports · optional Symbol column · ≥ 260 days</p>
           <input ref={input} type="file" accept=".csv,text/csv" className="hidden" aria-label="Choose dataset file"
@@ -382,7 +382,7 @@ export function SignalLab() {
             <span className="text-[12px] text-muted">Capital allocated to this stock (₹)</span>
             <input inputMode="numeric" value={capital} onChange={(e) => setCapital(e.target.value.replace(/[^0-9]/g, ''))}
               aria-label="Capital"
-              className={cn('num h-11 rounded-2xl bg-white/[0.06] px-4 text-[17px] font-semibold tracking-tight ring-1 ring-inset outline-none focus:ring-info/60', capOk ? 'ring-white/10' : 'ring-down/50')} />
+              className={cn('num h-11 rounded-2xl bg-white/[0.06] px-4 text-[17px] font-semibold tracking-tight ring-1 ring-inset outline-none focus:ring-white/40', capOk ? 'ring-white/10' : 'ring-down/50')} />
             {!capOk && <span className="text-[11.5px] text-down">Minimum ₹10,000</span>}
           </label>
           <div className="h-px bg-white/[0.07]" />
@@ -395,7 +395,7 @@ export function SignalLab() {
               </select>
               <Button disabled={!capOk || run.isPending} onClick={() => run.mutate({ kind: 'symbol', symbol: stored })}>Analyze</Button>
             </div>
-            <a href={`/api/v1/signal-lab/sample/${stored}.csv`} className="mt-1 inline-flex items-center gap-1.5 text-[12px] text-[#5ac8fa] hover:underline">
+            <a href={`/api/v1/signal-lab/sample/${stored}.csv`} className="mt-1 inline-flex items-center gap-1.5 text-[12px] text-fg underline decoration-white/30 underline-offset-4 hover:decoration-white">
               <Download className="size-3.5" />Download {stored} as a sample CSV to try the upload
             </a>
           </div>

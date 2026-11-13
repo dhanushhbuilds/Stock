@@ -43,7 +43,7 @@ describe('Overview', () => {
     })
     renderAt('/')
     expect(await screen.findByText('BULL')).toBeInTheDocument()
-    expect(screen.getByText('1/1')).toBeInTheDocument()
+    expect(screen.getByText('of 1 checks passed')).toBeInTheDocument()
     expect(await screen.findByText(/none passed the gate/)).toBeInTheDocument()
     expect(screen.getByText(/refuses to decide/)).toBeInTheDocument()
     expect(await screen.findByText('ema crossover')).toBeInTheDocument()

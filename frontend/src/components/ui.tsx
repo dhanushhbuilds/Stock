@@ -13,7 +13,7 @@ export function Panel({ title, right, children, className, padded }: {
     <section className={cn('glass fade-in flex min-w-0 flex-col overflow-hidden rounded-[var(--radius-card)]', className)}>
       {title && (
         <header className="flex min-h-11 shrink-0 items-center gap-3 px-5 pt-3.5 pb-2">
-          <h2 className="text-[13px] font-semibold tracking-tight text-fg/90">{title}</h2>
+          <h2 className="eyebrow !text-[10.5px] !text-muted">{title}</h2>
           <div className="ml-auto flex items-center gap-2">{right}</div>
         </header>
       )}
@@ -30,8 +30,8 @@ export function Stat({ label, value, sub, valueClass }: {
 }) {
   return (
     <div className="min-w-0 px-5 py-3">
-      <div className="truncate text-[12px] text-muted">{label}</div>
-      <div className={cn('num mt-0.5 truncate text-[22px] font-semibold leading-8 tracking-tight text-fg', valueClass)}>{value}</div>
+      <div className="eyebrow truncate">{label}</div>
+      <div className={cn('num mt-1 truncate text-[22px] font-light leading-8 tracking-[-0.02em] text-fg', valueClass)}>{value}</div>
       {sub && <div className="mt-0.5 truncate text-[11.5px] text-dim">{sub}</div>}
     </div>
   )
@@ -41,7 +41,7 @@ const BADGE = {
   up: 'bg-up/15 text-up ring-up/25',
   down: 'bg-down/15 text-down ring-down/25',
   warn: 'bg-warn/15 text-warn ring-warn/25',
-  info: 'bg-info/15 text-[#5ac8fa] ring-info/30',
+  info: 'bg-white/[0.10] text-fg ring-white/20',
   muted: 'bg-white/[0.06] text-muted ring-white/10',
 } as const
 
@@ -63,9 +63,9 @@ export function Button({ children, onClick, disabled, variant = 'default', type 
   size?: 'md' | 'lg'
 }) {
   const v = {
-    default: 'bg-white/[0.07] text-fg/90 ring-1 ring-inset ring-white/10 hover:bg-white/[0.12]',
-    primary: 'bg-info text-white shadow-[0_8px_24px_-8px_rgba(10,132,255,0.7)] hover:bg-[#2b95ff]',
-    danger: 'bg-down/90 text-white shadow-[0_8px_24px_-8px_rgba(255,69,58,0.6)] hover:bg-down',
+    default: 'bg-white/[0.07] text-fg/90 ring-1 ring-inset ring-white/12 hover:bg-white/[0.12]',
+    primary: 'bg-gradient-to-b from-white to-[#d8d8dc] text-[#111] shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_10px_28px_-10px_rgba(255,255,255,0.35)] hover:from-white hover:to-white',
+    danger: 'bg-down/90 text-[#1a0806] shadow-[0_10px_28px_-12px_rgba(255,122,107,0.6)] hover:bg-down',
   }[variant]
   return (
     <button type={type} title={title} onClick={onClick} disabled={disabled}
@@ -87,7 +87,7 @@ export function Segmented<T extends string>({ value, options, onChange, label }:
       {options.map(([v, text]) => (
         <button key={v} role="tab" type="button" aria-selected={value === v} onClick={() => onChange(v)}
           className={cn('h-7 rounded-full px-3.5 text-[12px] font-medium transition-colors',
-            value === v ? 'bg-white/[0.16] text-fg shadow-sm' : 'text-muted hover:text-fg')}>
+            value === v ? 'bg-white/[0.88] text-[#111] shadow-[0_2px_8px_rgba(0,0,0,0.4)]' : 'text-muted hover:text-fg')}>
           {text}
         </button>
       ))}
@@ -122,7 +122,7 @@ export function Table({ head, children, dense }: { head: ReactNode[]; children: 
   return (
     <div className="overflow-auto">
       <table className="w-full border-collapse text-left">
-        <thead className="sticky top-0 z-10 bg-[#0b0d12]/80 text-[11px] font-medium text-dim backdrop-blur-xl">
+        <thead className="sticky top-0 z-10 bg-[#141416]/85 text-[10.5px] font-medium uppercase tracking-[0.1em] text-dim backdrop-blur-xl">
           <tr>
             {head.map((h, i) => (
               <th key={i} className={cn('whitespace-nowrap px-5 font-medium', dense ? 'py-2' : 'py-2.5')}>{h}</th>
