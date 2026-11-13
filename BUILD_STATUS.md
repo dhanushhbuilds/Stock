@@ -17,14 +17,14 @@ Last updated: 2026-11-13 · Owner priority (13 Nov): **ML model first, then risk
 | 8 | Risk engine | **PASSED** | [PHASE_08](PHASE_REPORTS/PHASE_08_REPORT.md) |
 | 9 | Decision engine | **PASSED** (sized against a simulated book; never places orders) | [PHASE_09](PHASE_REPORTS/PHASE_09_REPORT.md) |
 | 10 | Paper trading | Postponed by owner | |
-| 11 | Frontend integration | **Mostly done** — Overview, Market Data, AI Research (swing/intraday/volatility), News, Strategy Lab, Risk Centre, Settings, System Monitor on real data; Paper/Portfolio postponed | |
+| 11 | Frontend integration | **Done (redesigned)** — glass design system; **Signal Lab** (upload any OHLCV CSV or pick a stored stock → validation → 77 features → promoted volatility model + research direction model → trend rule → risk engine → BUY/SELL/HOLD/NO TRADE with reasons, chart markers, backtest after costs, CSV export); Overview, Market Data, AI Research, News, Strategy Lab, Risk Centre, Settings, System Monitor; Paper/Portfolio postponed | |
 | 12 | System integration | Partial — end-to-end automated test (data → model → news → decision → risk → audit) passes | |
 | 13 | Security & hardening | Not started — **API authentication missing: keep the backend on localhost** | |
 | 14 | Broker execution readiness | Not started (live execution disabled by config validator) | |
 
 ## Test status (latest full run)
 
-204 backend tests passing, 19 frontend tests passing, ruff + oxlint clean, `alembic check` clean.
+215 backend tests passing, 22 frontend tests passing, ruff + oxlint clean, `alembic check` clean.
 
 ## Outstanding external blockers
 

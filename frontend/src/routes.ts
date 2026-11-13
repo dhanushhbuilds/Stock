@@ -1,6 +1,6 @@
 import {
   Activity, BarChart3, Brain, Briefcase, CandlestickChart, FlaskConical, LayoutDashboard, Newspaper,
-  Settings, ShieldAlert, type LucideIcon,
+  Settings, ShieldAlert, Sparkles, type LucideIcon,
 } from 'lucide-react'
 
 export interface RouteDef {
@@ -15,6 +15,7 @@ export interface RouteDef {
 
 export const ROUTES: RouteDef[] = [
   { path: '/', label: 'Overview', icon: LayoutDashboard, phase: 11 },
+  { path: '/signal-lab', label: 'Signal Lab', icon: Sparkles, phase: 9 },
   { path: '/market', label: 'Market Data', icon: CandlestickChart, phase: 2 },
   { path: '/research', label: 'AI Research', icon: Brain, phase: 4 },
   { path: '/news', label: 'News Intelligence', icon: Newspaper, phase: 6 },

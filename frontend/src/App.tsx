@@ -14,12 +14,14 @@ const Market = lazy(() => import('@/pages/Market').then((m) => ({ default: m.Mar
 const News = lazy(() => import('@/pages/News').then((m) => ({ default: m.News })))
 const Research = lazy(() => import('@/pages/Research').then((m) => ({ default: m.Research })))
 const Risk = lazy(() => import('@/pages/Risk').then((m) => ({ default: m.Risk })))
+const SignalLab = lazy(() => import('@/pages/SignalLab').then((m) => ({ default: m.SignalLab })))
 const Settings = lazy(() => import('@/pages/Settings').then((m) => ({ default: m.Settings })))
 const StrategyLab = lazy(() => import('@/pages/StrategyLab').then((m) => ({ default: m.StrategyLab })))
 const page = (el: React.ReactNode) => <Suspense fallback={<div className="p-4 text-muted">Loading…</div>}>{el}</Suspense>
 
 const PAGES: Record<string, React.ReactNode> = {
   '/': <Overview />,
+  '/signal-lab': page(<SignalLab />),
   '/market': page(<Market />),
   '/research': page(<Research />),
   '/news': page(<News />),

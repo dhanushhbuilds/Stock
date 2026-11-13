@@ -3,7 +3,7 @@ import { useState } from 'react'
 
 import { CandleChart } from '@/components/CandleChart'
 import { PageHeader } from '@/components/PageHeader'
-import { Badge, Panel, QueryState, Stat, Table } from '@/components/ui'
+import { Badge, Segmented, Panel, QueryState, Stat, Table } from '@/components/ui'
 import { apiGet, type CandlesResponse, type Member } from '@/lib/api'
 import { int, num, pct, tone } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -67,14 +67,7 @@ export function Market() {
           <Panel
             title={<span className="normal-case tracking-normal text-fg">{symbol} <span className="text-dim">{member?.company_name}</span></span>}
             right={
-              <div role="tablist" className="flex">
-                {(Object.keys(TF) as Tf[]).map((k) => (
-                  <button key={k} role="tab" aria-selected={tf === k} type="button" onClick={() => setTf(k)}
-                    className={cn('h-6 border border-line px-2 text-[11px]', tf === k ? 'bg-panel-2 text-fg' : 'text-muted')}>
-                    {TF[k].label}
-                  </button>
-                ))}
-              </div>
+              <Segmented label="Timeframe" value={tf} onChange={setTf} options={(Object.keys(TF) as Tf[]).map((k) => [k, TF[k].label] as const)} />
             }>
             <div className="grid grid-cols-2 border-b border-line sm:grid-cols-5">
               <Stat label="Last close" value={num(last?.close)} sub={last ? new Date(last.ts).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) : undefined} />

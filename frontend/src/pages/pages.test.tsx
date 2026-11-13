@@ -45,7 +45,7 @@ describe('Overview', () => {
     expect(await screen.findByText('BULL')).toBeInTheDocument()
     expect(screen.getByText('1/1')).toBeInTheDocument()
     expect(await screen.findByText(/none passed the gate/)).toBeInTheDocument()
-    expect(screen.getByText(/the engine refuses to decide/)).toBeInTheDocument()
+    expect(screen.getByText(/refuses to decide/)).toBeInTheDocument()
     expect(await screen.findByText('ema crossover')).toBeInTheDocument()
   })
 
@@ -86,7 +86,7 @@ describe('AI Research', () => {
   it('empty state when no run exists for the pipeline', async () => {
     mockApi({ '/ml/runs': [], '/ml/models': [] })
     renderAt('/research')
-    await userEvent.click(await screen.findByRole('tab', { name: 'intraday' }))
+    await userEvent.click(await screen.findByRole('tab', { name: 'Intraday' }))
     expect(await screen.findByText(/No intraday training run yet/)).toBeInTheDocument()
   })
 })
@@ -212,10 +212,69 @@ describe('Volatility tab', () => {
         promotion_reasons: ['PASS: holdout RMSE(log vol) below persistence'], created_at: '' }],
     })
     renderAt('/research')
-    await userEvent.click(await screen.findByRole('tab', { name: 'volatility' }))
+    await userEvent.click(await screen.findByRole('tab', { name: 'Volatility' }))
     expect(await screen.findByText('promoted')).toBeInTheDocument()
     expect(screen.getAllByText('0.184').length).toBeGreaterThan(0)
     expect(screen.getByText('-12.9%')).toBeInTheDocument()  // 1 - 0.4672/0.5362
     expect(screen.getByText('PASS: holdout RMSE(log vol) below persistence')).toHaveClass('text-up')
+  })
+})
+
+describe('Signal Lab', () => {
+  const day = (date: string, action: string, extra = {}) => ({
+    date, open: 100, high: 102, low: 99, close: 101, volume: 1000, action, position: action === 'HOLD' ? 50 : 0, executed: null,
+    p_up: 0.3, p_neutral: 0.45, p_down: 0.25, score: 0.05, vol_pred_annual: 0.19, vol_pct: 0.4, uptrend: true, sma50: 98,
+    sma200: 95, atr14: 2, stop: null, reasons: ['Uptrend + model not bearish + volatility acceptable; risk approved 495 shares.'], risk: null, ...extra,
+  })
+  const risk = { approved: true, quantity: 495, stop: 97, target: 109, reasons: ['all checks passed'],
+    checks: [{ name: 'kill_switch_off', passed: true, value: 'OFF', limit: 'OFF', detail: null }, { name: 'confidence', passed: true, value: 0.554664821965, limit: 0.4, detail: null }] }
+  const result = {
+    source: 'stored:RELIANCE', capital: 1000000,
+    models: { direction: { name: 'Logistic Regression', status: 'research', trained_through: '2026-11-05' }, volatility: { name: 'lightgbm', version: 'v', holdout_r2: 0.184 } },
+    results: [{
+      symbol: 'RELIANCE', rows: 2692, first_date: '2016-01-01', last_date: '2026-11-12', notes: ['Stored Upstox daily data (adjusted).'], quality: { passed: true },
+      final: { ...day('2026-11-12', 'BUY', { risk }), next_session: 'Buy 495 shares at the next open; stop-loss 97, target 109 (risk-approved).' },
+      days: [day('2026-11-11', 'NO_TRADE'), day('2026-11-12', 'BUY', { risk })],
+      trades: [{ entry_date: '2025-01-01', exit_date: '2025-02-01', entry: 100, exit: 110, qty: 10, net: 90, return_pct: 10, reason: 'trend broken', costs: 10 }],
+      equity: [['2026-11-11', 1, 1], ['2026-11-12', 1.01, 1.02]],
+      metrics: { strategy: perf(0.43, 0.56), buy_and_hold: perf(0.76, 4.33), closed_trades: 29, win_rate_trades: 0.21, exposure: 0.63, period: ['2016-10-26', '2026-11-12'] },
+    }],
+  }
+
+  it('analyzes a stored stock and shows a risk-evaluated verdict, drivers and checks', async () => {
+    const spy = mockApi({ '/data/universe': [{ symbol: 'RELIANCE', company_name: 'R', industry: 'x', instrument_key: 'k', sector_index_key: null, as_of: '' }],
+      '/signal-lab/analyze-symbol/RELIANCE': result })
+    renderAt('/signal-lab')
+    await userEvent.click(await screen.findByRole('button', { name: 'Analyze' }))
+    expect(await screen.findByTestId('verdict')).toHaveTextContent('BUY')
+    expect(screen.getByText(/Buy 495 shares at the next open/)).toBeInTheDocument()
+    expect(screen.getByText('₹97.00')).toBeInTheDocument()
+    expect(screen.getByText('0.5547')).toBeInTheDocument()  // formatted risk value
+    expect(screen.getByText('Up 30%')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Download all signals/ })).toBeInTheDocument()
+    expect(spy.mock.calls.some(([u, i]) => String(u).includes('/signal-lab/analyze-symbol/RELIANCE?capital=1000000') && i?.method === 'POST')).toBe(true)
+  })
+
+  it('uploads a CSV file as multipart and surfaces server validation errors', async () => {
+    const spy = mockApi({ '/data/universe': [], '/signal-lab/analyze': () =>
+      new Response(JSON.stringify({ detail: 'Missing required column(s): close.' }), { status: 422 }) })
+    renderAt('/signal-lab')
+    const file = new File(['Date,Open\n2024-01-01,1\n'], 'bad.csv', { type: 'text/csv' })
+    await userEvent.upload(await screen.findByLabelText('Choose dataset file'), file)
+    expect(screen.getByText('bad.csv')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: /Analyze dataset/ }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('Missing required column(s): close.')
+    const call = spy.mock.calls.find(([u]) => String(u).includes('/signal-lab/analyze'))!
+    expect(call[1]!.body).toBeInstanceOf(FormData)
+  })
+
+  it('blocks analysis when capital is below the minimum', async () => {
+    mockApi({ '/data/universe': [] })
+    renderAt('/signal-lab')
+    const cap = await screen.findByLabelText('Capital')
+    await userEvent.clear(cap)
+    await userEvent.type(cap, '500')
+    expect(screen.getByText('Minimum ₹10,000')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Analyze' })).toBeDisabled()
   })
 })

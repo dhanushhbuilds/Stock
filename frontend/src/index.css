@@ -1,21 +1,25 @@
 @import "tailwindcss";
 
-/* Terminal palette: deep charcoal, restrained semantic colours. Dark-only by design. */
+/* AstraQuant design language: dark glass, Apple system colours, quiet typography. */
 @theme {
-  --color-bg: #0e1013;
-  --color-panel: #15181d;
-  --color-panel-2: #1b1f25;
-  --color-line: #262b33;
-  --color-fg: #d6dae0;
-  --color-muted: #8a929e;
-  --color-dim: #5c6470;
-  --color-up: #26a269;
-  --color-down: #e0524a;
-  --color-warn: #d9a23a;
-  --color-info: #5b9bd5;
+  --color-bg: #050608;
+  --color-panel: rgba(255, 255, 255, 0.045);
+  --color-panel-2: rgba(255, 255, 255, 0.075);
+  --color-line: rgba(255, 255, 255, 0.085);
+  --color-fg: #f5f5f7;
+  --color-muted: rgba(235, 235, 245, 0.62);
+  --color-dim: rgba(235, 235, 245, 0.38);
+  --color-up: #30d158;
+  --color-down: #ff453a;
+  --color-warn: #ffd60a;
+  --color-info: #0a84ff;
+  --color-violet: #bf5af2;
+  --color-teal: #64d2ff;
 
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --font-sans: -apple-system, "SF Pro Display", "SF Pro Text", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "SF Mono", "JetBrains Mono", ui-monospace, Menlo, monospace;
+
+  --radius-card: 22px;
 }
 
 html, body, #root { height: 100%; }
@@ -26,7 +30,48 @@ body {
   color: var(--color-fg);
   font-family: var(--font-sans);
   font-size: 13px;
+  letter-spacing: -0.003em;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+/* Ambient light: three very soft, slowly drifting colour fields behind the glass. */
+.ambient { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.ambient::before, .ambient::after, .ambient > i {
+  content: ""; position: absolute; border-radius: 9999px; filter: blur(110px); opacity: 0.32;
+  animation: drift 28s ease-in-out infinite alternate;
+}
+.ambient::before { width: 46vw; height: 46vw; left: -10vw; top: -14vw; background: #0a84ff; }
+.ambient::after { width: 40vw; height: 40vw; right: -12vw; top: 8vh; background: #5e5ce6; animation-delay: -9s; opacity: 0.22; }
+.ambient > i { width: 38vw; height: 38vw; left: 30vw; bottom: -22vw; background: #30d158; opacity: 0.12; animation-delay: -18s; }
+@keyframes drift { from { transform: translate3d(0, 0, 0) scale(1); } to { transform: translate3d(3vw, 2vh, 0) scale(1.08); } }
+@media (prefers-reduced-motion: reduce) { .ambient::before, .ambient::after, .ambient > i { animation: none; } }
+
+.glass {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.035));
+  backdrop-filter: blur(28px) saturate(170%);
+  -webkit-backdrop-filter: blur(28px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 24px 48px -24px rgba(0, 0, 0, 0.7);
+}
+.glass-strong {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.05));
+  backdrop-filter: blur(36px) saturate(180%);
+  -webkit-backdrop-filter: blur(36px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 30px 60px -30px rgba(0, 0, 0, 0.8);
+}
+
+.num { font-family: var(--font-sans); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.mono { font-family: var(--font-mono); }
+
+/* Thin, unobtrusive scrollbars */
+* { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.14) transparent; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 8px; }
+
+input, select, button { font: inherit; }
+input[type="checkbox"] { accent-color: var(--color-info); }
+
+.fade-in { animation: fade 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }

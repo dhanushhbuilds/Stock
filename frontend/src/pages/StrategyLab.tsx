@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
 import { PageHeader } from '@/components/PageHeader'
-import { Badge, Note, Panel, QueryState, Table } from '@/components/ui'
+import { Badge, Segmented, Note, Panel, QueryState, Table } from '@/components/ui'
 import { apiGet, type Perf, type StrategyResult } from '@/lib/api'
 import { num, pct, tone } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -43,14 +43,7 @@ export function StrategyLab() {
   return (
     <>
       <PageHeader title="Strategy Lab">
-        <div role="tablist" className="flex">
-          {(['out_of_sample', 'in_sample'] as const).map((p) => (
-            <button key={p} role="tab" aria-selected={period === p} type="button" onClick={() => setPeriod(p)}
-              className={cn('h-6 border border-line px-2.5 text-[11px]', period === p ? 'bg-panel-2 text-fg' : 'text-muted')}>
-              {p === 'out_of_sample' ? 'Out of sample 2020→' : 'In sample 2017–2019'}
-            </button>
-          ))}
-        </div>
+        <Segmented label="Period" value={period} onChange={setPeriod} options={[['out_of_sample', 'Out of sample 2020→'], ['in_sample', 'In sample 2017–2019']] as const} />
       </PageHeader>
       <div className="flex flex-col gap-3 p-3">
         <QueryState isPending={rep.isPending} error={rep.error} isEmpty={!strategies.length}

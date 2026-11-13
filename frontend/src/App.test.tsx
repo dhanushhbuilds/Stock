@@ -29,12 +29,12 @@ const renderApp = (path = '/') =>
   render(<App initialPath={path} queryClient={new QueryClient({ defaultOptions: { queries: { retry: false } } })} />)
 
 describe('App shell', () => {
-  it('renders all ten required pages in navigation', () => {
+  it('renders all required pages (ten + Signal Lab) in navigation', () => {
     mockFetch(() => json(READY))
     renderApp()
     const nav = screen.getByRole('navigation', { name: 'Main' })
-    expect(within(nav).getAllByRole('link')).toHaveLength(10)
-    for (const label of ['Overview', 'Market Data', 'AI Research', 'News Intelligence', 'Strategy Lab',
+    expect(within(nav).getAllByRole('link')).toHaveLength(11)
+    for (const label of ['Overview', 'Signal Lab', 'Market Data', 'AI Research', 'News Intelligence', 'Strategy Lab',
       'Risk Centre', 'Paper Trading', 'Portfolio', 'System Monitor', 'Settings']) {
       expect(within(nav).getByRole('link', { name: label })).toBeInTheDocument()
     }

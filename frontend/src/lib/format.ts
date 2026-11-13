@@ -18,3 +18,11 @@ export const shortDate = (iso: string | null | undefined) =>
 /** Colour class for a value that is good when positive. */
 export const tone = (x: number | null | undefined) =>
   x == null ? 'text-muted' : x > 0 ? 'text-up' : x < 0 ? 'text-down' : 'text-muted'
+
+/** Indian compact notation: 3.59 Cr, 12.4 L, 9,500. */
+export const compact = (x: number | null | undefined) => {
+  if (x == null) return '—'
+  if (Math.abs(x) >= 1e7) return `${(x / 1e7).toFixed(2)} Cr`
+  if (Math.abs(x) >= 1e5) return `${(x / 1e5).toFixed(1)} L`
+  return Math.round(x).toLocaleString('en-IN')
+}

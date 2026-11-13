@@ -4,7 +4,7 @@ import { Bar, BarChart, CartesianGrid, Legend, ReferenceLine, ResponsiveContaine
 
 import { PageHeader } from '@/components/PageHeader'
 import { VolatilityPanel } from '@/pages/VolatilityPanel'
-import { Badge, Note, Panel, QueryState, Stat, Table } from '@/components/ui'
+import { Badge, Segmented, Note, Panel, QueryState, Stat, Table } from '@/components/ui'
 import { apiGet, type Experiment, type Metrics, type RegisteredModel, type Run } from '@/lib/api'
 import { dateTime, num, pct, tone } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -109,14 +109,7 @@ export function Research() {
   return (
     <>
       <PageHeader title="AI Research">
-        <div role="tablist" className="flex">
-          {(['swing', 'intraday', 'volatility'] as const).map((p) => (
-            <button key={p} role="tab" aria-selected={pipeline === p} type="button" onClick={() => setPipeline(p)}
-              className={cn('h-6 border border-line px-2.5 text-[11px] capitalize', pipeline === p ? 'bg-panel-2 text-fg' : 'text-muted')}>
-              {p}
-            </button>
-          ))}
-        </div>
+        <Segmented label="Pipeline" value={pipeline} onChange={setPipeline} options={[['swing', 'Swing'], ['intraday', 'Intraday'], ['volatility', 'Volatility']] as const} />
       </PageHeader>
       <div className="flex flex-col gap-3 p-3">
         {pipeline === 'volatility' ? <VolatilityPanel /> : (
@@ -144,14 +137,7 @@ export function Research() {
 
           <QueryState isPending={exps.isPending} error={exps.error} isEmpty={!ex.length}>
             <Panel title="Out-of-sample quality" right={
-              <div role="tablist" className="flex">
-                {(['walk_forward', 'holdout'] as const).map((p) => (
-                  <button key={p} role="tab" aria-selected={part === p} type="button" onClick={() => setPart(p)}
-                    className={cn('h-6 border border-line px-2 text-[11px]', part === p ? 'bg-panel-2 text-fg' : 'text-muted')}>
-                    {p === 'walk_forward' ? 'Walk-forward (all folds)' : 'Locked holdout'}
-                  </button>
-                ))}
-              </div>
+              <Segmented label="Evaluation" value={part} onChange={setPart} options={[['walk_forward', 'Walk-forward (all folds)'], ['holdout', 'Locked holdout']] as const} />
             }>
               <MetricRows exps={ex} part={part} />
               <div className="p-3">

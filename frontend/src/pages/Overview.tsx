@@ -6,7 +6,7 @@ import { Badge, Button, Panel, QueryState, Stat, Table } from '@/components/ui'
 import {
   apiGet, apiPost, type Coverage, type Decision, type NewsRow, type Regime, type RegisteredModel, type StrategyResult,
 } from '@/lib/api'
-import { dateTime, int, num, pct, signed, tone } from '@/lib/format'
+import { compact, dateTime, int, num, pct, signed, tone } from '@/lib/format'
 
 const ACTION_TONE = { BUY: 'up', SELL: 'down', HOLD: 'info', NO_TRADE: 'muted' } as const
 
@@ -70,7 +70,7 @@ export function Overview() {
           <QueryState isPending={coverage.isPending} error={coverage.error} isEmpty={!cov.length}
             empty="No data downloaded yet.">
             <div className="grid grid-cols-3">
-              <Stat label="Candles" value={int(rows)} />
+              <Stat label="Candles" value={compact(rows)} sub={`${int(rows)} rows`} />
               <Stat label="Instruments" value={int(instruments)} />
               <Stat label="Quality checks" value={`${checked.filter((c) => c.quality_passed).length}/${checked.length}`}
                 valueClass={checked.every((c) => c.quality_passed) ? 'text-up' : 'text-warn'} sub="passed" />
@@ -100,7 +100,7 @@ export function Overview() {
             </>
           }>
           <QueryState isPending={decisions.isPending} error={decisions.error} isEmpty={!latest.length}
-            empty="No decisions yet. Decisions need a promoted model; if none passed the promotion gate, the engine refuses to decide.">
+            empty={<span>No swing decisions: the direction model did not pass the promotion gate, so the live engine refuses to decide. For risk-evaluated BUY · SELL · HOLD on any stock or dataset, use <Link to="/signal-lab" className="text-[#5ac8fa] hover:underline">Signal Lab →</Link></span>}>
             <div className="flex gap-2 border-b border-line px-3 py-1.5">
               {Object.entries(counts).map(([a, n]) => (
                 <span key={a} className="flex items-center gap-1.5"><ActionBadge action={a as Decision['action']} />

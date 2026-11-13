@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app import __version__
-from app.api import data, decisions, health, ml, news, risk, upstox_auth
+from app.api import data, decisions, health, ml, news, risk, signal_lab, upstox_auth
 from app.core.config import get_settings
 from app.core.logging import configure_logging, get_logger
 
@@ -75,6 +75,7 @@ def create_app() -> FastAPI:
     app.include_router(news.router, prefix="/api/v1")
     app.include_router(decisions.router, prefix="/api/v1")
     app.include_router(ml.router, prefix="/api/v1")
+    app.include_router(signal_lab.router, prefix="/api/v1")
     return app
 
 

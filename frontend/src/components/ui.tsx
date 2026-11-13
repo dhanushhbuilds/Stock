@@ -2,21 +2,22 @@ import type { ReactNode } from 'react'
 
 import { cn } from '@/lib/utils'
 
-export function Panel({ title, right, children, className }: {
+export function Panel({ title, right, children, className, padded }: {
   title?: ReactNode
   right?: ReactNode
   children: ReactNode
   className?: string
+  padded?: boolean
 }) {
   return (
-    <section className={cn('flex min-w-0 flex-col overflow-hidden border border-line bg-panel', className)}>
+    <section className={cn('glass fade-in flex min-w-0 flex-col overflow-hidden rounded-[var(--radius-card)]', className)}>
       {title && (
-        <header className="flex h-8 shrink-0 items-center gap-2 border-b border-line px-3">
-          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">{title}</h2>
+        <header className="flex min-h-11 shrink-0 items-center gap-3 px-5 pt-3.5 pb-2">
+          <h2 className="text-[13px] font-semibold tracking-tight text-fg/90">{title}</h2>
           <div className="ml-auto flex items-center gap-2">{right}</div>
         </header>
       )}
-      <div className="min-h-0 flex-1">{children}</div>
+      <div className={cn('min-h-0 flex-1', padded && 'px-5 pb-5')}>{children}</div>
     </section>
   )
 }
@@ -28,52 +29,73 @@ export function Stat({ label, value, sub, valueClass }: {
   valueClass?: string
 }) {
   return (
-    <div className="min-w-0 px-3 py-2">
-      <div className="truncate text-[10px] uppercase tracking-wider text-dim">{label}</div>
-      <div className={cn('num truncate text-[17px] leading-6 text-fg', valueClass)}>{value}</div>
-      {sub && <div className="truncate text-[11px] text-muted">{sub}</div>}
+    <div className="min-w-0 px-5 py-3">
+      <div className="truncate text-[12px] text-muted">{label}</div>
+      <div className={cn('num mt-0.5 truncate text-[22px] font-semibold leading-8 tracking-tight text-fg', valueClass)}>{value}</div>
+      {sub && <div className="mt-0.5 truncate text-[11.5px] text-dim">{sub}</div>}
     </div>
   )
 }
 
 const BADGE = {
-  up: 'border-up/40 bg-up/10 text-up',
-  down: 'border-down/40 bg-down/10 text-down',
-  warn: 'border-warn/40 bg-warn/10 text-warn',
-  info: 'border-info/40 bg-info/10 text-info',
-  muted: 'border-line bg-panel-2 text-muted',
+  up: 'bg-up/15 text-up ring-up/25',
+  down: 'bg-down/15 text-down ring-down/25',
+  warn: 'bg-warn/15 text-warn ring-warn/25',
+  info: 'bg-info/15 text-[#5ac8fa] ring-info/30',
+  muted: 'bg-white/[0.06] text-muted ring-white/10',
 } as const
 
 export function Badge({ tone = 'muted', children }: { tone?: keyof typeof BADGE; children: ReactNode }) {
   return (
-    <span className={cn('inline-flex h-[18px] items-center border px-1.5 text-[10px] font-medium uppercase tracking-wide', BADGE[tone])}>
+    <span className={cn('inline-flex h-[22px] items-center whitespace-nowrap rounded-full px-2.5 text-[11px] font-medium ring-1 ring-inset', BADGE[tone])}>
       {children}
     </span>
   )
 }
 
-export function Button({ children, onClick, disabled, variant = 'default', type = 'button', title }: {
+export function Button({ children, onClick, disabled, variant = 'default', type = 'button', title, size = 'md' }: {
   children: ReactNode
   onClick?: () => void
   disabled?: boolean
   variant?: 'default' | 'primary' | 'danger'
   type?: 'button' | 'submit'
   title?: string
+  size?: 'md' | 'lg'
 }) {
   const v = {
-    default: 'border-line text-muted hover:bg-panel-2 hover:text-fg',
-    primary: 'border-info/60 bg-info/15 text-info hover:bg-info/25',
-    danger: 'border-down/60 bg-down/15 text-down hover:bg-down/25',
+    default: 'bg-white/[0.07] text-fg/90 ring-1 ring-inset ring-white/10 hover:bg-white/[0.12]',
+    primary: 'bg-info text-white shadow-[0_8px_24px_-8px_rgba(10,132,255,0.7)] hover:bg-[#2b95ff]',
+    danger: 'bg-down/90 text-white shadow-[0_8px_24px_-8px_rgba(255,69,58,0.6)] hover:bg-down',
   }[variant]
   return (
     <button type={type} title={title} onClick={onClick} disabled={disabled}
-      className={cn('h-7 border px-2.5 text-[11px] font-medium disabled:cursor-not-allowed disabled:opacity-50', v)}>
+      className={cn('inline-flex items-center justify-center gap-1.5 rounded-full font-medium transition-[background,transform] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-45',
+        size === 'lg' ? 'h-11 px-6 text-[14px]' : 'h-8 px-4 text-[12.5px]', v)}>
       {children}
     </button>
   )
 }
 
-/** Loading / error / empty states, shown instead of content. Returns null when there is data to render. */
+export function Segmented<T extends string>({ value, options, onChange, label }: {
+  value: T
+  options: readonly (readonly [T, string])[]
+  onChange: (v: T) => void
+  label?: string
+}) {
+  return (
+    <div role="tablist" aria-label={label} className="inline-flex rounded-full bg-white/[0.06] p-0.5 ring-1 ring-inset ring-white/10">
+      {options.map(([v, text]) => (
+        <button key={v} role="tab" type="button" aria-selected={value === v} onClick={() => onChange(v)}
+          className={cn('h-7 rounded-full px-3.5 text-[12px] font-medium transition-colors',
+            value === v ? 'bg-white/[0.16] text-fg shadow-sm' : 'text-muted hover:text-fg')}>
+          {text}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+/** Loading / error / empty states, shown instead of content. */
 export function QueryState({ isPending, error, isEmpty, empty, children }: {
   isPending: boolean
   error: Error | null
@@ -81,31 +103,33 @@ export function QueryState({ isPending, error, isEmpty, empty, children }: {
   empty?: ReactNode
   children: ReactNode
 }) {
-  if (isPending) return <div className="p-3 text-muted">Loading…</div>
+  if (isPending) return <div className="flex items-center gap-2 px-5 py-4 text-muted"><Spinner /> Loading…</div>
   if (error)
     return (
-      <div role="alert" className="m-3 border border-down/40 bg-down/10 p-2 text-down">
+      <div role="alert" className="mx-5 my-4 rounded-2xl bg-down/10 px-4 py-3 text-[12.5px] text-down ring-1 ring-inset ring-down/25">
         {error.message}
       </div>
     )
-  if (isEmpty) return <div className="p-3 text-muted">{empty ?? 'No data.'}</div>
+  if (isEmpty) return <div className="px-5 py-4 text-muted">{empty ?? 'No data.'}</div>
   return <>{children}</>
+}
+
+export function Spinner({ className }: { className?: string }) {
+  return <span aria-hidden className={cn('inline-block size-3.5 animate-spin rounded-full border-2 border-white/20 border-t-white/80', className)} />
 }
 
 export function Table({ head, children, dense }: { head: ReactNode[]; children: ReactNode; dense?: boolean }) {
   return (
     <div className="overflow-auto">
       <table className="w-full border-collapse text-left">
-        <thead className="sticky top-0 bg-panel-2 text-[10px] uppercase tracking-wider text-dim">
+        <thead className="sticky top-0 z-10 bg-[#0b0d12]/80 text-[11px] font-medium text-dim backdrop-blur-xl">
           <tr>
             {head.map((h, i) => (
-              <th key={i} className={cn('whitespace-nowrap px-3 font-medium', dense ? 'py-1' : 'py-1.5')}>
-                {h}
-              </th>
+              <th key={i} className={cn('whitespace-nowrap px-5 font-medium', dense ? 'py-2' : 'py-2.5')}>{h}</th>
             ))}
           </tr>
         </thead>
-        <tbody className="[&_td]:whitespace-nowrap [&_td]:px-3 [&_td]:py-1 [&_tr]:border-t [&_tr]:border-line">
+        <tbody className="[&_td]:whitespace-nowrap [&_td]:px-5 [&_td]:py-2 [&_tr]:border-t [&_tr]:border-white/[0.05] [&_tr:hover]:bg-white/[0.03]">
           {children}
         </tbody>
       </table>
@@ -114,5 +138,5 @@ export function Table({ head, children, dense }: { head: ReactNode[]; children: 
 }
 
 export function Note({ children }: { children: ReactNode }) {
-  return <p className="border-l-2 border-warn/60 bg-warn/5 px-3 py-1.5 text-[12px] text-muted">{children}</p>
+  return <p className="rounded-2xl bg-white/[0.04] px-4 py-3 text-[12px] leading-relaxed text-muted ring-1 ring-inset ring-white/[0.06]">{children}</p>
 }
