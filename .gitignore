@@ -1,0 +1,23 @@
+# secrets
+.env
+*.env
+!.env.example
+
+# python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# node
+node_modules/
+dist/
+
+# data and artifacts (metadata lives in Postgres)
+data/
+artifacts/
+
+.DS_Store
+*.egg-info/

@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+/* Terminal palette: deep charcoal, restrained semantic colours. Dark-only by design. */
+@theme {
+  --color-bg: #0e1013;
+  --color-panel: #15181d;
+  --color-panel-2: #1b1f25;
+  --color-line: #262b33;
+  --color-fg: #d6dae0;
+  --color-muted: #8a929e;
+  --color-dim: #5c6470;
+  --color-up: #26a269;
+  --color-down: #e0524a;
+  --color-warn: #d9a23a;
+  --color-info: #5b9bd5;
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
