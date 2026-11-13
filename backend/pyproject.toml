@@ -13,6 +13,9 @@ dependencies = [
   "redis>=5.0",              # live state / pub-sub
   "structlog>=24.1",         # structured JSON logs
   "httpx>=0.27",             # HTTP client (Upstox REST)
+  "pandas>=2.2",             # candle frames, validation, resampling
+  "pyarrow>=17",             # Parquet lake
+  "cryptography>=43",        # Fernet encryption of broker tokens at rest
 ]
 
 [project.optional-dependencies]
@@ -28,10 +31,11 @@ include = ["app*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra"
-markers = ["integration: needs running Postgres and Redis"]
+asyncio_default_fixture_loop_scope = "function"
+markers = ["integration: needs running Postgres and Redis", "slow: loads large models (FinBERT)"]
 
 [tool.ruff]
-line-length = 110
+line-length = 120
 target-version = "py312"
 
 [tool.ruff.lint]
@@ -40,3 +44,11 @@ select = ["E", "F", "I", "B", "UP"]
 [tool.ruff.lint.isort]
 known-first-party = ["app", "tests"]
 known-third-party = ["alembic"]
+
+[tool.ruff.lint.per-file-ignores]
+# Markdown table literals and verbatim RSS fixtures are clearer unwrapped.
+"app/engines/ml/report.py" = ["E501"]
+"app/engines/strategy/report.py" = ["E501"]
+"tests/test_news.py" = ["E501"]
+# NEVER let the import sorter reorder these: the order prevents an OpenMP segfault (see the module docstring).
+"app/engines/ml/__init__.py" = ["I001"]

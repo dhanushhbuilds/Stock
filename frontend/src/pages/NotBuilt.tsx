@@ -10,7 +10,8 @@ export function NotBuilt({ route }: { route: RouteDef }) {
         <div className="max-w-lg border border-line bg-panel p-4">
           <p className="text-fg">Not built yet.</p>
           <p className="mt-1 text-muted">
-            This page becomes functional in <span className="text-fg">Phase {route.phase}</span>. It will show
+            {route.status ? `${route.status} ` : ''}This page becomes functional in{' '}
+            <span className="text-fg">Phase {route.phase}</span>. It will show
             only data produced by the backend, never sample figures.
           </p>
         </div>

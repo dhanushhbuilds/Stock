@@ -35,8 +35,9 @@ def _timed(fn) -> Check:
         detail = fn()
         return Check(status="ok", latency_ms=round((time.perf_counter() - t0) * 1000, 2), detail=detail)
     except Exception as exc:  # report, never raise from a health check
-        return Check(status="error", latency_ms=round((time.perf_counter() - t0) * 1000, 2),
-                     detail=type(exc).__name__)
+        return Check(
+            status="error", latency_ms=round((time.perf_counter() - t0) * 1000, 2), detail=type(exc).__name__
+        )
 
 
 def _db() -> str:
@@ -61,11 +62,18 @@ def readiness(response: Response) -> Readiness:
     checks = {
         "database": _timed(_db),
         "redis": _timed(_redis),
-        "upstox": Check(status="ok" if s.upstox_configured else "not_configured",
-                        detail=None if s.upstox_configured else "UPSTOX_API_KEY/SECRET missing"),
+        "upstox": Check(
+            status="ok" if s.upstox_configured else "not_configured",
+            detail=None if s.upstox_configured else "UPSTOX_API_KEY/SECRET missing",
+        ),
     }
     core_ok = checks["database"].status == "ok" and checks["redis"].status == "ok"
     if not core_ok:
         response.status_code = 503
-    return Readiness(status="ok" if core_ok else "degraded", version=__version__, env=s.app_env,
-                     live_trading_enabled=s.live_trading_enabled, checks=checks)
+    return Readiness(
+        status="ok" if core_ok else "degraded",
+        version=__version__,
+        env=s.app_env,
+        live_trading_enabled=s.live_trading_enabled,
+        checks=checks,
+    )

@@ -13,8 +13,9 @@ def test_sensitive_keys_redacted():
 
 
 def test_inline_bearer_and_url_credentials_redacted():
-    out = redact_secrets(None, "info", {"event": "GET with Bearer eyJabc.def-ghi",
-                                        "dsn": "postgresql://user:pw123@host/db"})
+    out = redact_secrets(
+        None, "info", {"event": "GET with Bearer eyJabc.def-ghi", "dsn": "postgresql://user:pw123@host/db"}
+    )
     assert "eyJabc" not in out["event"]
     assert "pw123" not in out["dsn"] and out["dsn"].startswith("postgresql://user:")
 

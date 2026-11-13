@@ -1,6 +1,6 @@
 # AstraQuant X-2026 — Architecture
 
-Status: Phase 1 foundation implemented (core/, health API, audit table, frontend shell). Engine sections are design until their phase passes.
+Status (2026-11-13): implemented — foundation, data engine (historical), features, ML training/registry/inference, news, strategies + backtester, risk, decision. Not yet — live feed (blocked on credentials), paper trading (postponed), frontend pages, auth/hardening, broker adapter.
 
 ## 1. Shape of the system
 
@@ -95,11 +95,26 @@ Live feed (Market Data Feed V3)
 - Messages are Protobuf (`MarketDataFeed.proto` from `assets.upstox.com`); first message `market_info`, then `live_feed` snapshots/updates.
 - Server sends WS ping when idle → we track last-message time for stale-feed detection.
 
+## 4a. Verified provider behaviour (measured against live Upstox responses, 2026-11-13)
+
+| Observation | Evidence | How the platform handles it |
+|---|---|---|
+| V3 historical candles answer **without an access token** | HTTP 200 for daily and 1-minute requests with no `Authorization` header | Downloader works without OAuth; token is attached automatically once connected. OAuth still required for the live feed (Phase 5) and orders. |
+| Range limit enforced | 1-minute request spanning 2.5 months → HTTP 400 `UDAPI1148 Invalid date range` | `plan_chunks()` uses calendar months for ≤15-min, quarters for >15-min/hours, ≤10 years for daily (2016-01-01→2025-12-31 accepted). |
+| Prices are **corporate-action adjusted retroactively** | RELIANCE pre-bonus (Oct 2024) prices appear as ~₹1,340, not ~₹2,700, in both daily and 1-minute data | Incremental runs re-fetch a 7-day overlap; any price disagreement ⇒ full re-download of that series (`drift_detected`). |
+| Older daily candles for some symbols are stamped 09:15 instead of 00:00 | 718 HDFCBANK / INFY daily candles 2016-01 → 2018-11 | `normalize_daily()` floors to the session date; count reported per download. |
+| First 1-minute bar can have `open` outside the bar's high/low | HDFCBANK 2024-06-25 09:15: open 835.6, low 837.4 (identical in raw API response) | Kept as delivered; reported as `open_outside_range_at_session_open` warning (pre-open auction price). Same condition elsewhere = error. |
+| **Closing-auction pattern from 2026-08-03** | Every session since: 15:15–15:28 bars flat with zero volume; 15:29 bar carries the closing print and volume (e.g. RELIANCE 1309.0 → 1319.0, 400k shares) | Reported as `closing_auction_pattern` in quality reports. Feature/label pipelines must treat 15:15–15:28 as non-trading placeholders and 15:29 as an auction print (Phase 3). |
+| Special sessions exist | Sunday 2026-11-08 and 2025-10-21 (Diwali Muhurat), Saturday 2024-03-02 / 2024-05-18 (~105 bars) | Classified as `short_sessions` / `special_session_days`, not as missing data. |
+| Some special sessions missing for some symbols | HDFCBANK/INFY lack Muhurat days 2016-10-30, 2017-10-19, 2018-11-07 that NIFTY 50 index has | `missing_trading_days` warning; never back-filled. |
+| Missing 1-minute bars are rare | 0.006–0.016% of expected bars on normal sessions | `incomplete_days` warning with worst days listed; never filled. |
+| Local 5-minute aggregation is exact | 9/9 symbol-days: identical OHLCV to Upstox's own 5-minute candles | 5-minute bars are built from 1-minute (`n_bars` column marks partial buckets). |
+
 ## 5. Storage
 
 - **PostgreSQL** (Alembic-managed): instruments, candle_files (metadata + checksums), datasets, experiments, models, predictions,
   news, sentiment, strategies, signals, backtests, risk_assessments, decisions, orders, trades, positions, portfolios, audit_events.
-- **Parquet** lake partitioned `data/candles/{interval}/{symbol}/{year}.parquet`; feature datasets `data/datasets/{name}/{version}/`
+- **Parquet** lake partitioned `data/candles/{timeframe}/{instrument_key with | → __}/{year}.parquet` (zstd), each file catalogued in `candle_files` with row count, first/last timestamp and SHA-256; feature datasets `data/datasets/{name}/{version}/`
   with a content hash recorded in Postgres (dataset version = hash of source files + feature config).
 - **Redis**: latest tick per instrument, feed heartbeat, pub/sub fan-out to WebSocket clients, API rate limiting. Justified only by the live path; the rest works without it.
 
@@ -130,3 +145,30 @@ Brokerage, STT, exchange transaction charges, SEBI fee, stamp duty, GST — impl
   (the machine's own Postgres on 5432 needs a password the build does not have, and is left untouched).
 - Tests use a separate `astraquant_test` database (dropped/recreated per run) and Redis db 15.
 - `docker compose --profile app up` runs the full stack; frontend nginx proxies `/api` (incl. WebSocket) to the backend.
+
+
+## 10. Implemented engine map (2026-11-13)
+
+| Engine | Package | Key entry points |
+|---|---|---|
+| E1 Data | `app/engines/data` | `cli instruments|download|quality|crosscheck5m`; `CandleLake.read(adjusted=True)`; `/api/v1/data/*`, `/api/v1/auth/upstox/*` |
+| E2 ML | `app/engines/ml` | `swing.build_swing_dataset`, `intraday.build_intraday_dataset`, `trainer.run` (walk-forward + purge + holdout + registry), `inference.predict_latest`; `cli train --pipeline swing|intraday` |
+| E3 News | `app/engines/news` | `sources.fetch` (NSE/RBI/SEBI RSS), `service.ingest`, `service.signal_for` (point-in-time); FinBERT via safetensors; `/api/v1/news/*` |
+| E4 Strategy | `app/engines/strategy` | 10 strategies, `backtest.backtest_symbol`, `charges.ChargeSchedule`, `runner` → `reports/strategies` |
+| E5 Risk | `app/engines/risk` | `RiskEngine.evaluate` (all checks recorded, fail-closed), VaR/CVaR/stress; `/api/v1/risk/*` |
+| E6 Decision | `app/engines/decision` | `DecisionEngine.decide` → BUY/SELL/HOLD/NO_TRADE + explanation; `service.run_swing`, `service.run_intraday_replay`; `/api/v1/decisions/*` |
+
+### Data corrections are data, not code
+`app/engines/data/reference/price_discontinuities.csv` (reviewed unadjusted corporate actions / index rebases, with evidence)
+and `data_quarantine.csv` (unrepairable periods) are applied on read for analytics; raw Parquet is never modified.
+Validation always runs on raw data (`adjusted=False`) so provider issues stay visible.
+
+### Model promotion gate (trainer.promotion_decision)
+Out-of-sample only: walk-forward AND holdout log loss below the class-prior baseline; walk-forward direction AUC ≥ 0.51;
+walk-forward mean daily IC > 0 with t ≥ 2; holdout direction AUC > 0.5; walk-forward strategy Sharpe after costs > 0.
+Selection between candidates uses walk-forward results only; the holdout is evaluated once afterwards.
+If no candidate passes, nothing is promoted and the decision engine returns no decisions.
+
+### Native library load order (macOS)
+`app/engines/ml/__init__.py` imports xgboost → torch → lightgbm. Other orders segfault (exit 139) because each ships its
+own OpenMP runtime. The ruff import sorter is disabled for that file; a subprocess regression test trains all three.

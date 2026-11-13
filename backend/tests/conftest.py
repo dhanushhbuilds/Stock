@@ -1,10 +1,17 @@
 """Test setup: run against a dedicated `astraquant_test` database and Redis db 15, never the dev data."""
 
 import os
+import tempfile
 
-os.environ["POSTGRES_DB"] = "astraquant_test"
+TEST_DB = os.environ.get("TEST_POSTGRES_DB", "astraquant_test")  # each parallel track uses its own
+os.environ["POSTGRES_DB"] = TEST_DB
 os.environ["APP_ENV"] = "test"
 os.environ["REDIS_URL"] = os.environ.get("TEST_REDIS_URL", "redis://localhost:6380/15")
+os.environ["DATA_DIR"] = tempfile.mkdtemp(prefix="astraquant-test-lake-")  # never the real lake
+os.environ["ARTIFACTS_DIR"] = tempfile.mkdtemp(prefix="astraquant-test-artifacts-")  # never the real registry
+os.environ["TOKEN_ENCRYPTION_KEY"] = "dGVzdC1rZXktdGVzdC1rZXktdGVzdC1rZXktdGVzdDA="  # test-only Fernet key
+for _k in ("UPSTOX_API_KEY", "UPSTOX_API_SECRET"):
+    os.environ[_k] = ""
 
 import pytest  # noqa: E402
 from alembic import command  # noqa: E402
@@ -12,8 +19,6 @@ from alembic.config import Config  # noqa: E402
 from sqlalchemy import create_engine, text  # noqa: E402
 
 from app.core.config import BACKEND_DIR, get_settings  # noqa: E402
-
-TEST_DB = "astraquant_test"
 
 
 def alembic_config() -> Config:
@@ -47,3 +52,35 @@ def client():
 
     with TestClient(create_app()) as c:
         yield c
+
+
+DATA_TABLES = (
+    "universe_members",
+    "instruments",
+    "broker_tokens",
+    "download_chunks",
+    "candle_files",
+    "data_quality_reports",
+    "audit_events",
+    "risk_state",
+    "risk_assessments",
+    "news_items",
+    "decisions",
+)
+
+
+@pytest.fixture
+def db():
+    """A session on the test DB with all data tables emptied first."""
+    from app.core.db import get_session
+
+    session = next(get_session())
+    session.execute(text(f"TRUNCATE {', '.join(DATA_TABLES)} RESTART IDENTITY CASCADE"))
+    session.commit()
+    yield session
+    session.close()
+
+
+@pytest.fixture
+def lake_dir(tmp_path):
+    return tmp_path / "lake"

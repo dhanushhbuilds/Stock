@@ -37,6 +37,13 @@ class Settings(BaseSettings):
     upstox_api_key: SecretStr | None = None
     upstox_api_secret: SecretStr | None = None
     upstox_redirect_uri: str | None = None
+    upstox_api_base: str = "https://api.upstox.com"
+    # Documented standard-API limits are 50/s, 500/min, 2000/30min. We run at 80% of each.
+    upstox_rate_limits: list[tuple[int, float]] = Field(
+        default_factory=lambda: [(40, 1.0), (400, 60.0), (1600, 1800.0)]
+    )
+    token_encryption_key: SecretStr | None = None
+    frontend_url: str = "http://localhost:5173"
 
     data_dir: Path = REPO_DIR / "data"
     artifacts_dir: Path = REPO_DIR / "artifacts"
@@ -48,7 +55,7 @@ class Settings(BaseSettings):
             return [o.strip() for o in v.split(",") if o.strip()]
         return v
 
-    @field_validator("upstox_api_key", "upstox_api_secret", mode="before")
+    @field_validator("upstox_api_key", "upstox_api_secret", "token_encryption_key", mode="before")
     @classmethod
     def _empty_is_none(cls, v: object) -> object:
         return None if v == "" else v

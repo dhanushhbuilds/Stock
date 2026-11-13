@@ -34,25 +34,25 @@ describe('App shell', () => {
     renderApp()
     const nav = screen.getByRole('navigation', { name: 'Main' })
     expect(within(nav).getAllByRole('link')).toHaveLength(10)
-    for (const label of ['Overview', 'Live Market', 'AI Research', 'News Intelligence', 'Strategy Lab',
+    for (const label of ['Overview', 'Market Data', 'AI Research', 'News Intelligence', 'Strategy Lab',
       'Risk Centre', 'Paper Trading', 'Portfolio', 'System Monitor', 'Settings']) {
       expect(within(nav).getByRole('link', { name: label })).toBeInTheDocument()
     }
   })
 
-  it('unbuilt pages say so and show no numbers', () => {
+  it('postponed pages say so and show no numbers', () => {
     mockFetch(() => json(READY))
-    renderApp('/risk')
-    expect(screen.getByRole('heading', { name: 'Risk Centre' })).toBeInTheDocument()
+    renderApp('/paper')
+    expect(screen.getByRole('heading', { name: 'Paper Trading' })).toBeInTheDocument()
     expect(screen.getByText('Not built yet.')).toBeInTheDocument()
-    expect(screen.getByText('Phase 8')).toBeInTheDocument()
+    expect(screen.getByText(/Postponed by the project owner/)).toBeInTheDocument()
   })
 
   it('navigation switches page', async () => {
     mockFetch(() => json(READY))
     renderApp('/')
     await userEvent.click(screen.getByRole('link', { name: 'Strategy Lab' }))
-    expect(screen.getByRole('heading', { name: 'Strategy Lab' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Strategy Lab' })).toBeInTheDocument()
   })
 })
 

@@ -1,0 +1,210 @@
+{
+  "protocol": {
+    "first_test": "2020-01-01",
+    "holdout_start": "2025-11-01",
+    "test_months": 6
+  },
+  "model": "logreg",
+  "top_k": 10,
+  "cost_round_trip": 0.0039,
+  "run_date": "2026-11-13",
+  "variants": [
+    "ml_top10",
+    "trend_equal_weight",
+    "trend_ml_top10",
+    "buy_and_hold"
+  ],
+  "walk_forward": {
+    "h5": {
+      "ic": {
+        "ic_mean": 0.018659256187338383,
+        "ic_std": 0.1975487961000264,
+        "ic_t": 3.597937760570639,
+        "ic_positive_share": 0.5272226050999311,
+        "ic_dates": 1451
+      },
+      "ml_top10": {
+        "periods": 291,
+        "total_return": 0.5033360950778425,
+        "annualized_return": 0.07316224121892723,
+        "sharpe": 0.48008245773765423,
+        "sortino": 0.543587053118381,
+        "max_drawdown": -0.39026131555506993,
+        "profit_factor": 1.2627254472275415,
+        "win_rate": 0.5087719298245614,
+        "trades": 0,
+        "costs_paid": 0.3783000000000009,
+        "avg_turnover": 0.6666666666666665,
+        "avg_invested": null
+      },
+      "trend_equal_weight": {
+        "periods": 291,
+        "total_return": 2.087393227547689,
+        "annualized_return": 0.21561291729044596,
+        "sharpe": 1.1316615422482705,
+        "sortino": 1.4473653990627853,
+        "max_drawdown": -0.30713111873487664,
+        "profit_factor": 1.606584027505777,
+        "win_rate": 0.5773195876288659,
+        "trades": 0,
+        "costs_paid": 0.10362300372403307,
+        "avg_turnover": 0.18261169041154812,
+        "avg_invested": null
+      },
+      "trend_ml_top10": {
+        "periods": 291,
+        "total_return": 0.21969566293739873,
+        "annualized_return": 0.03499535469039383,
+        "sharpe": 0.3194110386347412,
+        "sortino": 0.3549209996878439,
+        "max_drawdown": -0.27382013620336254,
+        "profit_factor": 1.1633593687013444,
+        "win_rate": 0.5035460992907801,
+        "trades": 0,
+        "costs_paid": 0.2977650000000007,
+        "avg_turnover": 0.5247422680412368,
+        "avg_invested": null
+      },
+      "buy_and_hold": {
+        "periods": 291,
+        "total_return": 2.8199829117017865,
+        "annualized_return": 0.26127746897947524,
+        "sharpe": 1.364854224302607,
+        "sortino": 1.6338022034223674,
+        "max_drawdown": -0.34411256401838497,
+        "profit_factor": 1.7319056246138702,
+        "win_rate": 0.5945017182130584,
+        "trades": 0,
+        "costs_paid": 0.0,
+        "avg_turnover": 0.003857329873530169,
+        "avg_invested": null
+      },
+      "seconds": 89.9
+    },
+    "h20": {
+      "ic": {
+        "ic_mean": 0.016767709088741884,
+        "ic_std": 0.21499046446384076,
+        "ic_t": 2.970901402893357,
+        "ic_positive_share": 0.5168849069607168,
+        "ic_dates": 1451
+      },
+      "ml_top10": {
+        "periods": 73,
+        "total_return": 0.6159197294792194,
+        "annualized_return": 0.0863601481417462,
+        "sharpe": 0.5928534357215308,
+        "sortino": 0.5602411883605786,
+        "max_drawdown": -0.2984791800666601,
+        "profit_factor": 1.8720920247109476,
+        "win_rate": 0.5416666666666666,
+        "trades": 0,
+        "costs_paid": 0.08034000000000004,
+        "avg_turnover": 0.5643835616438359,
+        "avg_invested": null
+      },
+      "trend_equal_weight": {
+        "periods": 73,
+        "total_return": 2.1148958606149177,
+        "annualized_return": 0.2166613318715931,
+        "sharpe": 1.1976972205548295,
+        "sortino": 1.0339140704722558,
+        "max_drawdown": -0.2818675150335548,
+        "profit_factor": 2.7096308647295193,
+        "win_rate": 0.7397260273972602,
+        "trades": 0,
+        "costs_paid": 0.05588708824333892,
+        "avg_turnover": 0.39260335963005905,
+        "avg_invested": null
+      },
+      "trend_ml_top10": {
+        "periods": 73,
+        "total_return": 0.28377362837720144,
+        "annualized_return": 0.04405987091412222,
+        "sharpe": 0.3689357510300528,
+        "sortino": 0.31928486809090884,
+        "max_drawdown": -0.3135456303225531,
+        "profit_factor": 1.5202545325572614,
+        "win_rate": 0.5277777777777778,
+        "trades": 0,
+        "costs_paid": 0.06434999999999999,
+        "avg_turnover": 0.4520547945205479,
+        "avg_invested": null
+      },
+      "buy_and_hold": {
+        "periods": 73,
+        "total_return": 2.8521482731410157,
+        "annualized_return": 0.26210050828478026,
+        "sharpe": 1.3758310795697393,
+        "sortino": 1.141838317195073,
+        "max_drawdown": -0.30453255331857576,
+        "profit_factor": 3.1780894138925238,
+        "win_rate": 0.7534246575342466,
+        "trades": 0,
+        "costs_paid": 0.0,
+        "avg_turnover": 0.015376479358866836,
+        "avg_invested": null
+      },
+      "seconds": 92.8
+    }
+  },
+  "selected_on_walk_forward": {
+    "horizon": 20,
+    "variant": "ml_top10"
+  },
+  "holdout": {
+    "ic": {
+      "ic_mean": -0.026324538325968698,
+      "ic_std": 0.1907297568272093,
+      "ic_t": -2.1158079246664543,
+      "ic_positive_share": 0.4127659574468085,
+      "ic_dates": 235
+    },
+    "ml_top10": {
+      "periods": 12,
+      "total_return": -0.17083752870532098,
+      "annualized_return": -0.1785679966752205,
+      "sharpe": -1.480926079640193,
+      "sortino": -1.5590667772659235,
+      "max_drawdown": -0.21446142832365067,
+      "profit_factor": 0.24877003947883755,
+      "win_rate": 0.3333333333333333,
+      "trades": 0,
+      "costs_paid": 0.011700000000000002,
+      "avg_turnover": 0.5,
+      "avg_invested": null
+    },
+    "trend_equal_weight": {
+      "periods": 12,
+      "total_return": -0.17213928670576428,
+      "annualized_return": -0.17992204599046924,
+      "sharpe": -0.8895859531583127,
+      "sortino": -1.1209797283403533,
+      "max_drawdown": -0.17115575168795094,
+      "profit_factor": 0.4401981410377714,
+      "win_rate": 0.3333333333333333,
+      "trades": 0,
+      "costs_paid": 0.014619355876613942,
+      "avg_turnover": 0.624758798145895,
+      "avg_invested": null
+    },
+    "buy_and_hold": {
+      "periods": 12,
+      "total_return": -0.07101022324022266,
+      "annualized_return": -0.07442528605632615,
+      "sharpe": -0.34734604051720797,
+      "sortino": -0.3974146500475442,
+      "max_drawdown": -0.11586185314336417,
+      "profit_factor": 0.7330408202922678,
+      "win_rate": 0.5833333333333334,
+      "trades": 0,
+      "costs_paid": 0.0,
+      "avg_turnover": 0.08333333333333333,
+      "avg_invested": null
+    },
+    "period": [
+      "2025-11-03",
+      "2026-10-14"
+    ]
+  }
+}

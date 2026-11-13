@@ -33,6 +33,7 @@ def redact_secrets(_logger: Any, _method: str, event_dict: dict[str, Any]) -> di
 
 def configure_logging(level: str = "INFO", json: bool = True) -> None:
     logging.basicConfig(format="%(message)s", stream=sys.stdout, level=level.upper(), force=True)
+    logging.getLogger("httpx").setLevel(logging.WARNING)  # request lines are noise; never contain tokens
     renderer = structlog.processors.JSONRenderer() if json else structlog.dev.ConsoleRenderer()
     structlog.configure(
         processors=[

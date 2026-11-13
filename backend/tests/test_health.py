@@ -36,10 +36,20 @@ def test_request_id_propagated(client):
 
 
 def test_cors_allows_frontend_origin(client):
-    r = client.options("/api/v1/health", headers={"Origin": "http://localhost:5173",
-                                                   "Access-Control-Request-Method": "GET"})
+    r = client.options(
+        "/api/v1/health", headers={"Origin": "http://localhost:5173", "Access-Control-Request-Method": "GET"}
+    )
     assert r.headers.get("access-control-allow-origin") == "http://localhost:5173"
 
 
 def test_unknown_route_404(client):
     assert client.get("/api/v1/nope").status_code == 404
+
+
+def test_validation_error_with_exception_context_is_422_not_500(client):
+    """Regression: a pydantic validator raising ValueError put an exception object into errors(); the handler
+    crashed with 500 while serialising it."""
+    r = client.post(
+        "/api/v1/risk/evaluate", json={"intent": {}, "market": {"last_price": "NaN"}, "portfolio": {}}
+    )
+    assert r.status_code == 422 and r.json()["error"] == "validation_error"
